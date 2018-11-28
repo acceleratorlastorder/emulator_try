@@ -8,23 +8,24 @@ class  Chip8Instance {
   }
 
   generateMonitor() {
-    this.monitor = document.getElementsByTagName("monitor")[0];
     console.error("this.monitor: ", this.monitor);
     let row = null;
     let cell = null;
     let pixelID = 0;
+    let domFragment = document.createDocumentFragment();
     for (let i = 0; i < this.monitorRes.height; i++) {
       row = document.createElement("section");
-      row.className = "row_" + i;
+      row.className = "row row_" + i;
       for (let j = 0; j <  this.monitorRes.width; j++) {
         cell = document.createElement("section");
         cell.name = "row_" + i + "_cell_" + j + "_pixelID_" + pixelID;
-        cell.className = "rowCell_" + j + "cellID_" + pixelID;
+        cell.className = "cell rowCell_" + j + "cellID_" + pixelID;
         row.appendChild(cell);
         pixelID++;
       }
-      this.monitor.appendChild(row);
+      domFragment.appendChild(row);
     }
+    this.monitor.appendChild(domFragment);
   }
 };
 
@@ -35,8 +36,11 @@ function StartChip8() {
 }
 
 function start() {
+  let t1 = performance.now();
   let currentInstance = StartChip8();
   console.error("currentInstance: ", currentInstance);
+  let t2 = performance.now();
+  console.log("generating context took: ", t2 - t1, " ms");
 }
 
 start();
