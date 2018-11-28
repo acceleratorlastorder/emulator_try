@@ -2,6 +2,7 @@ class  Chip8Instance {
   constructor(MonitorElement) {
     this.instructionSetArchitecture = {};
     this.monitorRes = { width: 64, height: 32 };
+    this.monitorPixelReferences = [];
     this.monitor = null;
     this.monitor = MonitorElement;
     this.generateMonitor();
@@ -12,20 +13,21 @@ class  Chip8Instance {
     let row = null;
     let cell = null;
     let pixelID = 0;
-    let domFragment = document.createDocumentFragment();
+    //let domFragment = document.createDocumentFragment();
     for (let i = 0; i < this.monitorRes.height; i++) {
       row = document.createElement("section");
       row.className = "row row_" + i;
       for (let j = 0; j <  this.monitorRes.width; j++) {
         cell = document.createElement("section");
         cell.name = "row_" + i + "_cell_" + j + "_pixelID_" + pixelID;
-        cell.className = "cell rowCell_" + j + "cellID_" + pixelID;
+        cell.className = "cell rowCell_" + j + " cellID_" + pixelID;
+        this.monitorPixelReferences.push(cell);
         row.appendChild(cell);
         pixelID++;
       }
-      domFragment.appendChild(row);
+      //domFragment.appendChild(row);
+      this.monitor.appendChild(row);
     }
-    this.monitor.appendChild(domFragment);
   }
 };
 
