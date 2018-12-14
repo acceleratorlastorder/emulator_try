@@ -21,3 +21,11 @@ monitor {
 .cell {
   flex: 1;
 }
+
+.cell.black {
+  background-color: black;
+}
+
+.cell.white {
+  background-color: white;
+}
