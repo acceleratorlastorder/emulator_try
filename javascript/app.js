@@ -69,22 +69,20 @@ class Chip8Instance {
     if (this.CPU.soundCounter > 0) { this.CPU.soundCounter-- };
   }
   testPixel() {
-    let x = 0,
-      y = 0;
+    let x = 0;
+    let y = 0;
+    let result;
     for (x = 0; x < this.monitorRes.height; x++) {
       for (y = 0; y < this.monitorRes.width; y++) {
+        result = "cell " + this.defaultColor[1];
         if (y % (x + 1) === 0) {
-          this.monitorTwoDimentionalMonitorArrayView[x][y].className = "cell " + this.defaultColor[0];
-        } else {
-          this.monitorTwoDimentionalMonitorArrayView[x][y].className = "cell " + this.defaultColor[1];
+          result = "cell " + this.defaultColor[0];
         }
+        this.monitorTwoDimentionalMonitorArrayView[x][y].className = result;
       }
     }
   }
-  start(){
-
-
-  }
+  start() {}
 };
 
 function StartChip8() {
