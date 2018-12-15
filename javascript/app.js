@@ -230,7 +230,7 @@ class Chip8Instance {
     while (this.mainThreadSwitch) {
       t1 = performance.now();
       opcode = this.getOpcode();
-      console.log("opcode: ", opcode.toString(16));
+      console.log("opcode: ", opcode.toString(16).toUpperCase());
       this.doOperation(opcode);
       this.updateScreen();
       this.counterDecrement();
