@@ -65,7 +65,7 @@ class Chip8Instance {
     b2 = (opcode & 0x00F0) >> 4;
     b1 = (opcode & 0x000F);
     opCodeId = this.getOperationFromOpcode(opcode);
-    console.log("opCodeId: ", opCodeId);
+    //console.log("opCodeId: ", opCodeId);
     switch (opCodeId) {
     case 0:
       {
@@ -74,6 +74,7 @@ class Chip8Instance {
       }
     case 1:
       {
+        console.log("00E0 : resetScreen");
         let x, y;
         for (x = 0; x < this.monitorRes.height; x++) {
           for (y = 0; y < this.monitorRes.width; y++) {
@@ -82,12 +83,51 @@ class Chip8Instance {
         }
         break;
       }
+      case 20:
+        {
+          console.log("ANNN : set the registerCounter to the adresse NNN; registerCounter: ", this.CPU.registerCounter, " NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF));
+          this.CPU.registerCounter = opcode & 0x0FFF;
+          break;
+        }
+      case 21:
+        {
+          console.log("BNNN : jump to the adresse NNN + V0; V0: ", this.CPU.register[0], "NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF), " result: ", (opcode & 0x0FFF) + this.CPU.register[0]);
+          this.CPU.programCounter = (opcode & 0x0FFF) + this.CPU.register[0];
+          break;
+        }
+      case 23:
+        {
+          console.log("DXYN : draw a sprite at the coordinate VX and VY with a fixed width of 8 pixel and the height is define by N b1: ", b1, " b2: ", b2, " b3: ", b3);
+
+          break;
+        }
+    case 30:
+      {
+        console.log("FX1E : add value in the register adresse x to the register current index\n x", b3, " register array: ", this.CPU.register);
+        /*if ((cpu.I + cpu.V[b3]) > 0xFFF) {
+          cpu.V[0xF] = 1;
+        } else {
+          cpu.V[0xF] = 0;
+        }
+        cpu.I += cpu.V[b3];*/
+        break;
+      }
     default:
       {
-        console.warn("opcode not implemented yet ! ");
+        if (opCodeId) {
+          console.warn("opcode not implemented yet ! opCodeId: ", opCodeId, " opcode: ", this.prettyPrintOpCode(opcode));
+        }else {
+          console.warn("opcodeId is undefined for the opcode: ", this.prettyPrintOpCode(opcode));
+        }
       }
     }
     this.CPU.programCounter += 2;
+    if ((this.CPU.programCounter + 1) > this.memory.length) {
+      throw "overflowOfMemory due to the counter going beyond the memory adresses"
+    }
+  }
+  prettyPrintOpCode(opcode){
+    return opcode.toString(16).toUpperCase();
   }
   generateOpcodeTable() {
     this.opcodeTable = ["0NNN", "00E0", "00EE", "1NNN", "2NNN", "3XNN", "4XNN", "5XY0", "6XNN",
@@ -141,7 +181,7 @@ class Chip8Instance {
     return {
       //16 bit counter to iterate through the memory array
       programCounter: 512,
-      //array representing the register
+      //array representing the register which is 8bit data register and 16 bloc of 8bit long
       register: new Uint8Array(16),
       //16 bit counter to iterate through the register array
       registerCounter: 0,
@@ -215,7 +255,7 @@ class Chip8Instance {
   async wait(t) {
     return await new Promise(resolve => {
       setTimeout(() => {
-        console.error("time to wait: ", t);
+        //console.error("time to wait: ", t);
         resolve();
       }, t);
     });
@@ -230,14 +270,14 @@ class Chip8Instance {
     while (this.mainThreadSwitch) {
       t1 = performance.now();
       opcode = this.getOpcode();
-      console.log("opcode: ", opcode.toString(16).toUpperCase());
+      //console.log("opcode: ", opcode.toString(16).toUpperCase());
       this.doOperation(opcode);
       this.updateScreen();
       this.counterDecrement();
       t2 = performance.now();
-      await this.wait(/*this.timeBetweenFrame - (t2 - t1) + */1000);
+      await this.wait(this.timeBetweenFrame - (t2 - t1) + 100);
       t3 = performance.now();
-      console.error("lol", (t3 - t2), "ms");
+      //console.error("lol", (t3 - t2), "ms");
     }
   }
   stopMainThread() {
@@ -291,7 +331,7 @@ function start() {
   let t2 = performance.now();
   console.log("generating context took: ", t2 - t1, " ms");
   testFunction(currentInstance);
-  currentInstance.start("./program/testRom.ch8");
+  currentInstance.start("./program/lol.ch8");
 }
 
 function testFunction(chip8Instance) {
