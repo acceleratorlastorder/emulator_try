@@ -4,6 +4,7 @@ class Chip8Instance {
       console.error("Cannot instantiate 'Chip8Instance' without the 'MonitorElement' argument");
       return;
     }
+    this.DEBUG = true;
     this.mainThreadSwitch = true;
     this.FPS = 60;
     this.timeBetweenFrame = 1 / this.FPS * 1000;
@@ -74,7 +75,7 @@ class Chip8Instance {
       }
     case 1:
       {
-        console.log("00E0 : resetScreen");
+        console.log("DONE! 00E0 : resetScreen");
         let x, y;
         for (x = 0; x < this.monitorRes.height; x++) {
           for (y = 0; y < this.monitorRes.width; y++) {
@@ -85,153 +86,155 @@ class Chip8Instance {
       }
     case 2:
       {
-        console.log("00EE : returns from a function");
+        console.log("TODO! 00EE : returns from a function");
         break;
       }
     case 3:
       {
-        console.log("1NNN : jumps to the NNN adresse; NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF));
+        console.log("TODO! 1NNN : jumps to the NNN adresse; NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF));
         break;
       }
     case 4:
       {
-        console.log("2NNN : calls a function at the NNN adresse; NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF));
+        console.log("TODO! 2NNN : calls a function at the NNN adresse; NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF));
         break;
       }
     case 5:
       {
-        console.log("3XNN : skips the next instruction if VX === NN; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " NN: ", this.prettyPrintOpCode(opcode & 0x00FF));
+        console.log("TODO! 3XNN : skips the next instruction if VX === NN; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " NN: ", this.prettyPrintOpCode(opcode & 0x00FF));
         break;
       }
     case 6:
       {
-        console.log("4XNN : skips the next instruction if VX !== NN; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " NN: ", this.prettyPrintOpCode(opcode & 0x00FF));
+        console.log("TODO! 4XNN : skips the next instruction if VX !== NN; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " NN: ", this.prettyPrintOpCode(opcode & 0x00FF));
         break;
       }
     case 7:
       {
-        console.log("5XY0 : skips the next instruction if VX === VY; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " VY: ", this.prettyPrintOpCode(opcode & 0x00F0));
+        console.log("TODO! 5XY0 : skips the next instruction if VX === VY; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " VY: ", this.prettyPrintOpCode(opcode & 0x00F0));
         break;
       }
     case 8:
       {
-        console.log("6XNN : sets VX to NN; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " NN: ", this.prettyPrintOpCode(opcode & 0x00FF));
+        console.log("TODO! 6XNN : sets VX to NN; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " NN: ", this.prettyPrintOpCode(opcode & 0x00FF));
         break;
       }
     case 9:
       {
-        console.log("7XNN : adds NN to VX: VX += NN if overflow the carryflag isn't changed!: ");
+        console.log("TODO! 7XNN : adds NN to VX: VX += NN if overflow the carryflag isn't changed!: ");
 
         break;
       }
     case 10:
       {
-        console.log("8XY0 : sets VX to VY (VX = VY)");
+        console.log("TODO! 8XY0 : sets VX to VY (VX = VY)");
         break;
       }
     case 11:
       {
-        console.log("8XY1 : sets VX to VX or VY (bitwise VX = VX|VY)");
+        console.log("TODO! 8XY1 : sets VX to VX or VY (bitwise VX = VX|VY)");
         break;
       }
     case 12:
       {
-        console.log("8XY2 : sets VX to VX and VY (bitwise VX = VX&VY)");
+        console.log("TODO! 8XY2 : sets VX to VX and VY (bitwise VX = VX&VY)");
         break;
       }
     case 13:
       {
-        console.log("8XY3 : sets VX to VX xor VY; (bitwise VX = VX^VY); VX: ", this.prettyPrintOpCode(this.CPU.register[opcode & 0x0F00]),
-          " VY: ", this.prettyPrintOpCode(this.CPU.register[opcode & 0x0F00]), " VX^VY = ",
-          this.prettyPrintOpCode(this.CPU.register[opcode & 0x0F00] ^ this.CPU.register[opcode & 0x00F0]));
+          if(this.DEBUG){
+            console.log("DONE! 8XY3 : sets VX to VX xor VY; (bitwise VX = VX^VY); VX: ", this.prettyPrintOpCode(this.CPU.register[opcode & 0x0F00]),
+            " VY: ", this.prettyPrintOpCode(this.CPU.register[opcode & 0x0F00]), " VX^VY = ",
+            this.prettyPrintOpCode(this.CPU.register[opcode & 0x0F00] ^ this.CPU.register[opcode & 0x00F0]));
+          }
           this.CPU.register[opcode & 0x0F00] = this.CPU.register[opcode & 0x0F00] ^ this.CPU.register[opcode & 0x00F0];
         break;
       }
     case 14:
       {
-        console.log("8XY4 : adds VY to VX if overflow of the 8bit capacity the carry flag at VF is set to 1 otherwise 0; VX ", this.CPU.register[0], " VY ", this.CPU.register[0]);
+        console.log("TODO! 8XY4 : adds VY to VX if overflow of the 8bit capacity the carry flag at VF is set to 1 otherwise 0; VX ", this.CPU.register[0], " VY ", this.CPU.register[0]);
         break;
       }
     case 15:
       {
-        console.log("8XY5 : substracts VY to VX, VX -= VY: if there is a borrow VF is set to 0 otherwise 1");
+        console.log("TODO! 8XY5 : substracts VY to VX, VX -= VY: if there is a borrow VF is set to 0 otherwise 1");
         break;
       }
     case 16:
       {
-        console.log("8XY6 : Stores the LSB (least significant bit) of VX in VF then right shift VX by 1");
+        console.log("TODO! 8XY6 : Stores the LSB (least significant bit) of VX in VF then right shift VX by 1");
         break;
       }
     case 17:
       {
-        console.log("8XY7 : sets VX to VY minus VX. VF is set to 0 when there is a borrow otherwise 1");
+        console.log("TODO! 8XY7 : sets VX to VY minus VX. VF is set to 0 when there is a borrow otherwise 1");
         break;
       }
     case 18:
       {
-        console.log("8XYE : Stores the MSB (most significant bit) of VX in VF then left shift VX by 1");
+        console.log("TODO! 8XYE : Stores the MSB (most significant bit) of VX in VF then left shift VX by 1");
         break;
       }
     case 19:
       {
-        console.log("9XY0 : skip the next instruction if VX !== VY");
+        console.log("TODO! 9XY0 : skip the next instruction if VX !== VY");
         break;
       }
     case 20:
       {
-        console.log("ANNN : set the registerCounter to the adresse NNN; registerCounter: ", this.CPU.registerCounter, " NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF));
+        console.log("DONE! ANNN : set the registerCounter to the adresse NNN; registerCounter: ", this.CPU.registerCounter, " NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF));
         this.CPU.registerCounter = opcode & 0x0FFF;
         break;
       }
     case 21:
       {
-        console.log("BNNN : jumps to the adresse NNN + V0; V0: ", this.CPU.register[0], "NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF), " result: ", (opcode & 0x0FFF) + this.CPU.register[0]);
+        console.log("DONE! BNNN : jumps to the adresse NNN + V0; V0: ", this.CPU.register[0], "NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF), " result: ", (opcode & 0x0FFF) + this.CPU.register[0]);
         this.CPU.programCounter = (opcode & 0x0FFF) + this.CPU.register[0];
         break;
       }
     case 22:
       {
-        console.log("CXNN : sets VX to the result of a bitwise an operation on a random number and NN (VX = random() & NN )");
+        console.log("TODO! CXNN : sets VX to the result of a bitwise an operation on a random number and NN (VX = random() & NN )");
         break;
       }
     case 23:
       {
-        console.log("DXYN : draws a sprite at the coordinate VX and VY with a fixed width of 8 pixel and the height is define by N b1: ", b1, " b2: ", b2, " b3: ", b3);
+        console.log("TODO! DXYN : draws a sprite at the coordinate VX and VY with a fixed width of 8 pixel and the height is define by N b1: ", b1, " b2: ", b2, " b3: ", b3);
         break;
       }
     case 24:
       {
-        console.log("EX9E : Skips the next instruction if the key stored in VX is pressed. (Usually the next instruction is a jump to skip a code block)");
+        console.log("TODO! EX9E : Skips the next instruction if the key stored in VX is pressed. (Usually the next instruction is a jump to skip a code block)");
         break;
       }
     case 25:
       {
-        console.log("EXA1 : Skips the next instruction if the key stored in VX isn't pressed. (Usually the next instruction is a jump to skip a code block)");
+        console.log("TODO! EXA1 : Skips the next instruction if the key stored in VX isn't pressed. (Usually the next instruction is a jump to skip a code block)");
         break;
       }
     case 26:
       {
-        console.log("FX07 : Sets VX to the value of the delay timer");
+        console.log("TODO! FX07 : Sets VX to the value of the delay timer");
         break;
       }
     case 27:
       {
-        console.log("FX0A : waits a key press event then stores it in VX, as long any key isn't pressed every operation are blocked (kind of a pause until key pressed)");
+        console.log("TODO! FX0A : waits a key press event then stores it in VX, as long any key isn't pressed every operation are blocked (kind of a pause until key pressed)");
         break;
       }
     case 28:
       {
-        console.log("FX15 : sets the delay timer to VX");
+        console.log("TODO! FX15 : sets the delay timer to VX");
         break;
       }
     case 29:
       {
-        console.log("FX18 : sets the sound timer to VX");
+        console.log("TODO! FX18 : sets the sound timer to VX");
         break;
       }
     case 30:
       {
-        console.log("FX1E : adds value in the register adresse x to the register current index\n x", b3, " register array: ", this.CPU.register);
+        console.log("TODO! FX1E : adds value in the register adresse x to the register current index\n x", b3, " register array: ", this.CPU.register);
         /*if ((cpu.I + cpu.V[b3]) > 0xFFF) {
           cpu.V[0xF] = 1;
         } else {
@@ -242,22 +245,22 @@ class Chip8Instance {
       }
     case 31:
       {
-        console.log("FX29 : sets i to the location of the sprite for the characteer in VX");
+        console.log("TODO! FX29 : sets i to the location of the sprite for the characteer in VX");
         break;
       }
     case 32:
       {
-        console.log("FX33 : ");
+        console.log("TODO! FX33 : ");
         break;
       }
     case 33:
       {
-        console.log("FX55 : Stores V0 to VX (including VX) in memory starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified. ");
+        console.log("TODO! FX55 : Stores V0 to VX (including VX) in memory starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified. ");
         break;
       }
     case 34:
       {
-        console.log("FX65 : Fills V0 to VX (including VX) with values from memory starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified. ");
+        console.log("TODO! FX65 : Fills V0 to VX (including VX) with values from memory starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified. ");
         break;
       }
     default:
@@ -385,6 +388,63 @@ class Chip8Instance {
     if (this.CPU.gameCounter > 0) { this.CPU.gameCounter-- };
     if (this.CPU.soundCounter > 0) { this.CPU.soundCounter-- };
   }
+
+  async testScreen(loop){
+    let timing = 10;
+    let t1, t2;
+
+
+    t1 = performance.now();
+    for (var i = timing; i --> 0;) {
+      this.testPixelInverted();
+    }
+    t2 = performance.now();
+    console.log("testPixelInverted took: ", t2 - t1, " ms");
+
+
+
+
+    await this.wait(timing);
+    this.blackScreen();
+
+      await this.wait(timing);
+    t1 = performance.now();
+    for (var i = timing; i --> 0;) {
+      this.testPixel();
+    }
+    t2 = performance.now();
+    console.log("testPixel took: ", t2 - t1, " ms");
+
+    await this.wait(timing);
+    this.whiteScreen();
+
+    /*
+    await this.wait(timing);
+    await this.slowFill();
+
+    await this.wait(timing);
+    await this.slowFill(true);
+    */
+    if (loop) {
+      await this.wait(timing);
+      this.testScreen();
+    }
+  }
+  testPixelInverted() {
+    let x = this.monitorRes.height;
+    let y = this.monitorRes.width;
+    let result;
+    for (; x-- >0;) {
+      for (; y-- >0;) {
+        result = this.defaultColor[1];
+        if (y % (x + 1) === 0) {
+          result = this.defaultColor[0];
+        }
+        this.twoDimentionalMonitorArrayBuffer[x][y] = result;
+      }
+    }
+    this.updateScreen();
+  }
   testPixel() {
     let x = 0;
     let y = 0;
@@ -400,6 +460,52 @@ class Chip8Instance {
     }
     this.updateScreen();
   }
+  blackScreen() {
+    let x = 0;
+    let y = 0;
+    let result;
+    for (x = 0; x < this.monitorRes.height; x++) {
+      for (y = 0; y < this.monitorRes.width; y++) {
+        result = this.defaultColor[0];
+        this.twoDimentionalMonitorArrayBuffer[x][y] = result;
+        this.twoDimentionalMonitorArrayBuffer[x][y] = result;
+      }
+    }
+    this.updateScreen();
+  }
+  async slowFill(whiteFill) {
+    const timing = 0.1;
+    let x = 0;
+    let y = 0;
+    let result;
+    let colorIndex = 0;
+    if(whiteFill){
+      colorIndex = 1;
+    }
+    for (x = 0; x < this.monitorRes.height; x++) {
+      for (y = 0; y < this.monitorRes.width; y++) {
+        result = this.defaultColor[colorIndex];
+        this.twoDimentionalMonitorArrayBuffer[x][y] = result;
+        this.twoDimentionalMonitorArrayBuffer[x][y] = result;
+        this.updateScreen();
+        await this.wait(timing);
+      }
+    }
+
+  }
+  whiteScreen() {
+    let x = 0;
+    let y = 0;
+    let result;
+    for (x = 0; x < this.monitorRes.height; x++) {
+      for (y = 0; y < this.monitorRes.width; y++) {
+        result = this.defaultColor[1];
+        this.twoDimentionalMonitorArrayBuffer[x][y] = result;
+      }
+    }
+    this.updateScreen();
+  }
+
   async wait(t) {
     return await new Promise(resolve => {
       setTimeout(() => {
@@ -471,27 +577,27 @@ function StartChip8() {
   return chip8;
 }
 
-function start() {
+async function start() {
   let t1 = performance.now();
   let currentInstance = StartChip8();
   test = currentInstance;
   console.log("currentInstance: ", currentInstance);
   let t2 = performance.now();
   console.log("generating context took: ", t2 - t1, " ms");
-  testFunction(currentInstance);
+  /*await testFunction(currentInstance);*/
   currentInstance.start("./program/lol.ch8");
 }
 
-function testFunction(chip8Instance) {
+async function testFunction(chip8Instance) {
   let lastStep = "start";
   let t1 = null;
   let t2 = null;
   try {
-    lastStep = "testPixel";
+    lastStep = "testScreen";
     t1 = performance.now();
-    chip8Instance.testPixel();
+    await chip8Instance.testScreen();
     t2 = performance.now();
-    console.log("testPixel took: ", t2 - t1, " ms");
+    console.log("testScreen took: ", t2 - t1, " ms");
   } catch (e) {
     console.error("failed on step : [", lastStep, "] got stack: ", e);
   }
