@@ -9,20 +9,26 @@ class Chip8Instance {
     this.FPS = 60;
     this.timeBetweenFrame = 1 / this.FPS * 1000;
     this.opPerCycle = 4;
+    this.currentKeysPressed = [];
     //time 1000 to get second as miliseconds
     this.decrementInterval = 1 / this.FPS * 1000;
+    /**
+     * The use of an Uint8Array makes the overflow possible in JS ex 255 + 1 = 256 in normal condition,
+     *  but here it will be 0
+     */
     this.memory = new Uint8Array(4096);
     this.CPU = this.generateCPU();
     this.operationTable = this.generateOpcodeTable();
     this.monitorRes = { width: 64, height: 32 };
     this.defaultColor = ["black", "white"];
     this.monitorPixelReferences = [];
-    this.twoDimentionalMonitorArrayView = [];
-    this.twoDimentionalMonitorArrayBuffer = [];
+    /** 2D HTMLCollection */
+    this.twoDimentionalMonitorArrayView = [[]];
+    this.twoDimentionalMonitorArrayBuffer = Array.from(Array(this.monitorRes.height), () => new Array(this.monitorRes.width));
     this.monitor = null;
     this.monitor = MonitorElement;
     this.generateMonitor();
-    this.setAllPixelToColor(this.defaultColor[0]);
+    this.setAllPixelToColor(this.defaultColor[1]);
   }
   injectOpCode(id) {
     switch (id) {
@@ -46,7 +52,7 @@ class Chip8Instance {
   }
   /**
   * [get an opcode by reading the memory]
-  *[behavior: since the memory is segmented in block of 8 bits and an opcode 16 bits
+  * [behavior: since the memory is segmented in block of 8 bits and an opcode 16 bits
   * we do need to take 2 value from the memory instead of just one]
   * @return {[Number]} [return technically an unsinedInt in 16 bits but we're in javascript soooo ;)]
   */
@@ -65,12 +71,24 @@ class Chip8Instance {
    * Exectute an opcode
    * @param {Number} opcode 
    */
-  doOperation(opcode) {
-    let opCodeId, b3, b2, b1;
-    b3 = (opcode & 0x0F00) >> 8;
-    b2 = (opcode & 0x00F0) >> 4;
-    b1 = (opcode & 0x000F);
-    opCodeId = this.getOperationFromOpcode(opcode);
+  async doOperation(opcode) {
+    let opCodeId = this.getOperationFromOpcode(opcode);
+    /**
+     * Position [0100] second sequence of 4bit
+     */
+    let b3 = (opcode & 0x0F00) >> 8;
+    /**
+     * Position [0010] third sequence of 4bit
+     */
+    let b2 = (opcode & 0x00F0) >> 4;
+    /**
+     * LSB last one of the opcode [0001]
+     */
+    let b1 = (opcode & 0x000F);
+    /**
+     * Define a random variable holding a random value for the current cycle
+     */
+    const randomCycleValue = window.crypto.getRandomValues(new Uint8Array(1))[0];
     //console.log("opCodeId: ", opCodeId);
     switch (opCodeId) {
       case 0:
@@ -91,7 +109,12 @@ class Chip8Instance {
         }
       case 2:
         {
-          console.log("TODO! 00EE : returns from a function");
+          console.log("MAYBE! 00EE : returns from a function");
+          if (this.CPU.stackJumpCounter > 0) {
+            /** return to previous stack index(should be valued with the calee adress right ?? :) who knows lol) */
+            this.CPU.stackJumpCounter--;
+          }
+          this.CPU.programCounter = this.CPU.stackJumpCounter;
           break;
         }
       case 3:
@@ -118,70 +141,131 @@ class Chip8Instance {
         }
       case 5:
         {
-          this.logger("TODO! 3XNN : skips the next instruction if VX === NN; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " NN: ", this.prettyPrintOpCode(opcode & 0x00FF));
+          const VX = this.CPU.register[b3];
+          const NN = opcode & 0x00FF;
+          this.logger("MAYBE! 3XNN : skips the next instruction if VX === NN; VX: ", this.prettyPrintOpCode(VX), " NN: ", this.prettyPrintOpCode(NN));
 
+          if (VX === NN) {
+            /** jump 2 8bit chunk to the next opcode (to the moon as they says) */
+            this.CPU.programCounter += 2;
+          }
 
           break;
         }
       case 6:
         {
-          this.logger("TODO! 4XNN : skips the next instruction if VX !== NN; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " NN: ", this.prettyPrintOpCode(opcode & 0x00FF));
+          const VX = this.CPU.register[b3];
+          const NN = opcode & 0x00FF;
+          this.logger("MAYBE! 4XNN : skips the next instruction if VX !== NN; VX: ", this.prettyPrintOpCode(VX), " NN: ", this.prettyPrintOpCode(NN));
+          if (VX !== NN) {
+            /** jump 2 8bit chunk to the next opcode (to the moon as they says) */
+            this.CPU.programCounter += 2;
+          }
           break;
         }
       case 7:
         {
-          this.logger("TODO! 5XY0 : skips the next instruction if VX === VY; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " VY: ", this.prettyPrintOpCode(opcode & 0x00F0));
+          const VX = this.CPU.register[b3];
+          const VY = this.CPU.register[b2];
+          this.logger("MAYBE! 5XY0 : skips the next instruction if VX === VY; VX: ", this.prettyPrintOpCode(VX), " NN: ", this.prettyPrintOpCode(NN));
+          if (VX === VY) {
+            /** jump 2 8bit chunk to the next opcode (to the moon as they says) */
+            this.CPU.programCounter += 2;
+          }
           break;
         }
       case 8:
         {
-          const
-          this.logger("TODO! 6XNN : sets VX to NN; VX: ", this.prettyPrintOpCode(opcode & 0x0F00), " NN: ", this.prettyPrintOpCode(opcode & 0x00FF));
-          this.CPU.register[] = ;
+          const VXAddress = b3;
+          const NN = opcode & 0x00FF;
+          this.logger("MAYBE! 6XNN : sets VX to NN; VX: ", this.prettyPrintOpCode(this.CPU.register[VXAddress]), " NN: ", this.prettyPrintOpCode(NN));
+          this.CPU.register[VXAddress] = NN;
           break;
         }
       case 9:
         {
-          this.logger("TODO! 7XNN : adds NN to VX: VX += NN if overflow the carryflag isn't changed!: ");
-
+          const VXAddress = b3;
+          const NN = opcode & 0x00FF;
+          this.logger("MAYBE! 7XNN : adds NN to VX: VX += NN if overflow the carryflag isn't changed!; VX: ",
+            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " NN: ", this.prettyPrintOpCode(NN),
+            " VX += NN = ", this.prettyPrintOpCode(this.CPU.register[VXAddress] + NN));
+          this.CPU.register[VXAddress] += NN;
           break;
         }
       case 10:
         {
-          this.logger("TODO! 8XY0 : sets VX to VY (VX = VY)");
+          const VXAddress = b3;
+          const VY = this.CPU.register[b2];
+          this.logger("MAYBE! 8XY0 : sets VX to VY (VX = VY)");
+
+          this.CPU.register[VXAddress] = VY;
           break;
         }
       case 11:
         {
-          this.logger("TODO! 8XY1 : sets VX to VX or VY (bitwise VX = VX|VY)");
+          const VX = this.CPU.register[b3];
+          const VY = this.CPU.register[b2];
+          const registerNewValue = VX | VY;
+          this.logger("MAYBE! 8XY1 : sets VX to VX or VY (bitwise VX = VX|VY); VX:",
+            this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY),
+            " VX|VY = ", registerNewValue);
+
+          this.CPU.register[VXAddress] = registerNewValue;
           break;
         }
       case 12:
         {
-          this.logger("TODO! 8XY2 : sets VX to VX and VY (bitwise VX = VX&VY)");
+          const VX = this.CPU.register[b3];
+          const VY = this.CPU.register[b2];
+          const registerNewValue = VX & VY;
+          this.logger("MAYBE! 8XY2 : sets VX to VX and VY (bitwise VX = VX&VY); VX:",
+            this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY),
+            " VX&VY = ", registerNewValue);
+
+          this.CPU.register[VXAddress] = registerNewValue;
           break;
         }
       case 13:
         {
-          const VXAddress = opcode & 0x0F00;
-          const VYAddress = opcode & 0x00F0;
-          const registerNewValue = this.CPU.register[VXAddress] ^ this.CPU.register[VYAddress];
-
-          this.logger("DONE! 8XY3 : sets VX to VX xor VY; (bitwise VX = VX^VY); VX: ", this.prettyPrintOpCode(this.CPU.register[VXAddress]),
-            " VY: ", this.prettyPrintOpCode(this.CPU.register[VXAddress]), " VX^VY = ",
-            this.prettyPrintOpCode(registerNewValue));
+          const VX = this.CPU.register[b3];
+          const VY = this.CPU.register[b2];
+          const registerNewValue = VX ^ VY;
+          this.logger("MAYBE! 8XY3 : sets VX to VX xor VY; (bitwise VX = VX^VY); VX:",
+            this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY),
+            " VX^VY = ", this.prettyPrintOpCode(registerNewValue));
 
           this.CPU.register[VXAddress] = registerNewValue;
           break;
         }
       case 14:
         {
-          this.logger("TODO! 8XY4 : adds VY to VX if overflow of the 8bit capacity the carry flag at VF is set to 1 otherwise 0; VX ", this.CPU.register[0], " VY ", this.CPU.register[0]);
+          const VXAddress = b3;
+          const VYAddress = b2;
+          const result = this.CPU.register[VXAddress] + this.CPU.register[VYAddress];
+          this.logger("TODO! 8XY4 : adds VY to VX if overflow of the 8bit capacity the carry flag at VF is set to 1 otherwise 0; VX",
+            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " VY ", this.prettyPrintOpCode(this.CPU.register[VYAddress]),
+            " VX + VY =", this.prettyPrintOpCode(result));
           break;
         }
       case 15:
         {
-          this.logger("TODO! 8XY5 : substracts VY to VX, VX -= VY: if there is a borrow VF is set to 0 otherwise 1");
+          const VXAddress = b3;
+          const VYAddress = b2;
+          const result = this.CPU.register[VXAddress] - this.CPU.register[VYAddress];
+          this.logger("MAYBE! 8XY5 : substracts VY to VX, VX -= VY: if there is a borrow VF is set to 0 otherwise 1; VX:",
+            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " VY:", this.prettyPrintOpCode(this.CPU.register[VYAddress]),
+            "VX -= VY:", result);
+
+          if (result < 0) {
+            /** Set VF to 0 since the value is inf to 0 (Remember thanks to JS the result variable might be = -666 
+              *    once we will insert this value into the 8bit register it will be converted into 102)
+              */
+            this.CPU.register[0xF] = 0;
+          } else {
+            this.CPU.register[0xF] = 1;
+          }
+
+          this.CPU.register[VXAddress] = result;
           break;
         }
       case 16:
@@ -201,29 +285,48 @@ class Chip8Instance {
         }
       case 19:
         {
-          this.logger("TODO! 9XY0 : skip the next instruction if VX !== VY");
+          const VX = this.CPU.register[b3];
+          const VY = this.CPU.register[b2];
+          this.logger("MAYBE! 9XY0 : skip the next instruction if VX !== VY; VX:", this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY));
+          if (VX !== NN) {
+            /** jump 2 8bit chunk to the next opcode (to the moon as they says) */
+            this.CPU.programCounter += 2;
+          }
           break;
         }
       case 20:
         {
-          this.logger("DONE! ANNN : set the registerCounter to the adresse NNN; registerCounter: ", this.CPU.registerCounter, " NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF));
-          this.CPU.registerCounter = opcode & 0x0FFF;
+          const NNN = opcode & 0x0FFF;
+          this.logger("DONE! ANNN : set the registerCounter to the adresse NNN; registerCounter: ", this.CPU.registerCounter, " NNN: ", this.prettyPrintOpCode(NNN));
+          this.CPU.registerCounter = NNN;
           break;
         }
       case 21:
         {
-          this.logger("DONE! BNNN : jumps to the adresse NNN + V0; V0: ", this.CPU.register[0], "NNN: ", this.prettyPrintOpCode(opcode & 0x0FFF), " result: ", (opcode & 0x0FFF) + this.CPU.register[0]);
-          this.CPU.programCounter = (opcode & 0x0FFF) + this.CPU.register[0];
+          const NNN = opcode & 0x0FFF;
+          const result = NNN + this.CPU.register[0];
+          this.logger("DONE! BNNN : jumps to the adresse NNN + V0; V0: ", this.CPU.register[0], "NNN: ", this.prettyPrintOpCode(NNN), " result: ", result);
+          this.CPU.programCounter = result;
           break;
         }
       case 22:
         {
-          this.logger("TODO! CXNN : sets VX to the result of a bitwise an operation on a random number and NN (VX = random() & NN )");
+          const VXAddress = b3;
+          const NN = opcode & 0x00FF;
+          const result = randomCycleValue & NN;
+          this.logger("MAYBE! CXNN : sets VX to the result of a bitwise an operation on a random number and NN (VX = random() & NN ); VX:",
+            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " NN:", this.prettyPrintOpCode(NN), " rand():",
+            this.prettyPrintOpCode(randomCycleValue), " VX = random() & NN =", this.prettyPrintOpCode(result));
+
+          this.CPU.register[VXAddress] = result;
+          randomCycleValue
+
           break;
         }
       case 23:
         {
-          this.logger("TODO! DXYN : draws a sprite at the coordinate VX and VY with a fixed width of 8 pixel and the height is define by N b1: ", b1, " b2: ", b2, " b3: ", b3);
+          this.logger("TODO! DXYN : draws a sprite at the coordinate VX and VY with a fixed width of 8 pixel and the height is define by N b1: ",
+            this.prettyPrintOpCode(b1), " b2: ", this.prettyPrintOpCode(b2), " b3: ", this.prettyPrintOpCode(b3));
           break;
         }
       case 24:
@@ -238,43 +341,74 @@ class Chip8Instance {
         }
       case 26:
         {
-          this.logger("TODO! FX07 : Sets VX to the value of the delay timer");
+          const VXAddress = b3;
+          this.logger("MAYBE! FX07 : Sets VX to the value of the delay timer; VX: ",
+            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " delayTimer:", this.CPU.delayTimer);
+
+          this.CPU.register[VXAddress] = this.CPU.delayTimer;
           break;
         }
       case 27:
         {
-          this.logger("TODO! FX0A : waits a key press event then stores it in VX, as long any key isn't pressed every operation are blocked (kind of a pause until key pressed)");
+          this.logger("TODO! FX0A : Waits a key press event then stores it in VX, as long any key isn't pressed every operation are blocked (kind of a pause until key pressed)");
+
+          await await new Promise(async resolve => {
+            /*wait key press*/
+            if (this.currentKeysPressed.length > 0 || true) {
+              /** TODO REMOVE THE ||TRUE once controller are implemented*/
+              resolve();
+            } else {
+              await this.wait(timeBetweenFrame);
+            }
+          });
+
           break;
         }
       case 28:
         {
-          this.logger("TODO! FX15 : sets the delay timer to VX");
+          const VXAddress = b3;
+          this.logger("MAYBE! FX15 : sets the delay timer to VX; VX: ",
+            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " delayTimer:", this.CPU.delayTimer);
+
+          this.CPU.delayTimer = this.CPU.register[VXAddress];
           break;
         }
       case 29:
         {
-          this.logger("TODO! FX18 : sets the sound timer to VX");
+          const VXAddress = b3;
+          this.logger("MAYBE! FX18 : sets the sound timer to VX; VX: ",
+            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " soundTimer:", this.CPU.soundTimer);
+
+          this.CPU.soundTimer = this.CPU.register[VXAddress];
           break;
         }
       case 30:
         {
-          this.logger("TODO! FX1E : adds value in the register adresse x to the register current index\n x", b3, " register array: ", this.CPU.register);
-          /*if ((cpu.I + cpu.V[b3]) > 0xFFF) {
-            cpu.V[0xF] = 1;
-          } else {
-            cpu.V[0xF] = 0;
+          const VX = this.CPU.register[b3];
+          let result = this.CPU.registerCounter + VX;
+          this.logger("TODO! FX1E : Adds VX to I(registerCounter). VF is not affected; VX:",
+            VX, " I =", this.CPU.registerCounter, " VX + I = ", result);
+          /** 
+           * To know more about the carry flag behavior here:
+           * https://en.wikipedia.org/wiki/CHIP-8#cite_note-18 
+           */
+          if (result > 0xFFFF) {
+            let overFlowFixArray = new Uint16Array(1);
+            overFlowFixArray[0] = result;
+            result = overFlowFixArray[0];
           }
-          cpu.I += cpu.V[b3];*/
+
+          this.CPU.registerCounter = result;
           break;
         }
       case 31:
         {
-          this.logger("TODO! FX29 : sets i to the location of the sprite for the characteer in VX");
+          this.logger("TODO! FX29 : Sets I to the location of the sprite for the character in VX. Characters 0-F (in hexadecimal) are represented by a 4x5 font.");
           break;
         }
       case 32:
         {
-          this.logger("TODO! FX33 : ");
+          this.logger("TODO! FX33 : Stores the binary-coded decimal representation of VX, with the most significant of three digits at the address in I, the middle digit at I plus 1, and the least significant digit at I plus 2. (In other words, take the decimal representation of VX, place the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2.) ");
           break;
         }
       case 33:
@@ -377,20 +511,20 @@ class Chip8Instance {
    */
   generateCPU() {
     return {
-      //16 bit counter to iterate through the memory array
+      /** 16 bit counter to iterate through the memory array */
       programCounter: 512,
-      //array representing the register which is 8bit data register and 16 bloc of 8bit long
+      /** array representing the register which is 8bit data register and 16 bloc of 8bit long */
       register: new Uint8Array(16),
-      //16 bit counter to iterate through the register array
+      /** 16 bit counter to iterate through the register array */
       registerCounter: 0,
       //array representing the stack
-      stack: new Uint8Array(16),
-      //16 bit counter to iterate through the stack array
+      stack: new Uint16Array(16),
+      /** stack jump counter to iterate through the stack array must not go past 15 since the stack is 16 indexes long*/
       stackJumpCounter: 0,
-      //
-      gameCounter: 0,
-      //
-      soundCounter: 0
+      /** */
+      delayTimer: 0,
+      /** */
+      soundTimer: 0
     }
   }
   generateMonitor() {
@@ -402,15 +536,15 @@ class Chip8Instance {
     for (let i = 0; i < this.monitorRes.height; i++) {
       row = document.createElement("section");
       row.className = "row row_" + i;
-      this.twoDimentionalMonitorArrayView[i] = [];
-      this.twoDimentionalMonitorArrayBuffer[i] = [];
+      this.twoDimentionalMonitorArrayView[i] = new Array(this.monitorRes.width);
+      this.twoDimentionalMonitorArrayBuffer[i] = new Array(this.monitorRes.width);
       for (let j = 0; j < this.monitorRes.width; j++) {
         cell = document.createElement("section");
         cell.name = "row_" + i + " cell_" + j + " pixelID_" + pixelID;
         cell.className = "cell";
         this.monitorPixelReferences.push(cell);
-        this.twoDimentionalMonitorArrayView[i].push(cell);
-        this.twoDimentionalMonitorArrayBuffer[i].push("");
+        this.twoDimentionalMonitorArrayView[i][j] = cell;
+        this.twoDimentionalMonitorArrayBuffer[i][j] = "";
         row.appendChild(cell);
         pixelID++;
       }
@@ -423,6 +557,17 @@ class Chip8Instance {
       this.monitorPixelReferences[i].className = "cell " + color;
     }
   }
+  draw(x, y, width, height){
+    let startingIndex = x*y;
+    
+    
+
+    for (; startingIndex < array.length; index++) {
+      const element = array[index];
+      
+    }
+  }
+  
   updateScreen() {
     for (var i = this.twoDimentionalMonitorArrayView.length; i-- > 0;) {
       for (var j = this.twoDimentionalMonitorArrayView[i].length; j-- > 0;) {
@@ -432,8 +577,8 @@ class Chip8Instance {
   }
   initCPU() { }
   counterDecrement() {
-    if (this.CPU.gameCounter > 0) { this.CPU.gameCounter-- };
-    if (this.CPU.soundCounter > 0) { this.CPU.soundCounter-- };
+    if (this.CPU.delayTimer > 0) { this.CPU.delayTimer-- };
+    if (this.CPU.soundTimer > 0) { this.CPU.soundTimer-- };
   }
 
   async testScreen(loop) {
@@ -572,7 +717,7 @@ class Chip8Instance {
       t1 = performance.now();
       opcode = this.getOpcode();
       //console.log("opcode: ", opcode.toString(16).toUpperCase());
-      this.doOperation(opcode);
+      await this.doOperation(opcode);
       this.updateScreen();
       this.counterDecrement();
       t2 = performance.now();
