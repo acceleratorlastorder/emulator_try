@@ -1,1 +1,1 @@
-chip8 in javascript https://acceleratorlastorder.github.io/emulator_try/javascript/ (work in progress)
+chip8 in javascript https://acceleratorlastorder.github.io/emulator_try/static/ (work in progress)
