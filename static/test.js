@@ -1,6 +1,7 @@
 //@ts-check
 
 class Test_Chip8Instance {
+    SHOW_CPU_STATE = false;
     /**
      * 
      * @param {Chip8Instance} chip8Instance 
@@ -13,8 +14,6 @@ class Test_Chip8Instance {
 
     init() {
         this.initTestToLaunch();
-
-        this.startTests();
     }
 
 
@@ -44,17 +43,15 @@ class Test_Chip8Instance {
         return result;
     }
 
-
-
-
-    TEST_0NNN() { console.log("TEST_0NNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
+    TEST_0NNN() { console.log("TEST_0NNN START !"); this.printCPU_State(); }
     TEST_00E0() {
-        console.log("TEST_00E0 START !"); console.log(JSON.stringify(this._Chip8.CPU));
+        console.log("TEST_00E0 START !");
+        this.printCPU_State(); 
         let result = true;
         const chip8Ctx = this._Chip8;
 
         chip8Ctx.doOperation(0x00E0);
-        
+
         for (let x = chip8Ctx.monitorRes.height; x-- > 0;) {
             for (let y = chip8Ctx.monitorRes.width; y-- > 0;) {
                 if (chip8Ctx.twoDimentionalMonitorArrayBuffer[x][y] !== "black") {
@@ -66,39 +63,39 @@ class Test_Chip8Instance {
 
         return result;
     }
-    TEST_00EE() { console.log("TEST_00EE START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_1NNN() { console.log("TEST_1NNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_2NNN() { console.log("TEST_2NNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_3XNN() { console.log("TEST_3XNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_4XNN() { console.log("TEST_4XNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_5XY0() { console.log("TEST_5XY0 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_6XNN() { console.log("TEST_6XNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_7XNN() { console.log("TEST_7XNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_8XY0() { console.log("TEST_8XY0 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_8XY1() { console.log("TEST_8XY1 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_8XY2() { console.log("TEST_8XY2 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_BXY3() { console.log("TEST_BXY3 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_8XY4() { console.log("TEST_8XY4 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_8XY5() { console.log("TEST_8XY5 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_8XY6() { console.log("TEST_8XY6 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_8XY7() { console.log("TEST_8XY7 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_8XYE() { console.log("TEST_8XYE START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_9XY0() { console.log("TEST_9XY0 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_ANNN() { console.log("TEST_ANNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_BNNN() { console.log("TEST_BNNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_CXNN() { console.log("TEST_CXNN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_DXYN() { console.log("TEST_DXYN START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_EX9E() { console.log("TEST_EX9E START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_EXA1() { console.log("TEST_EXA1 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_FX07() { console.log("TEST_FX07 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_FX0A() { console.log("TEST_FX0A START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_FX15() { console.log("TEST_FX15 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_FX18() { console.log("TEST_FX18 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_FX1E() { console.log("TEST_FX1E START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_FX29() { console.log("TEST_FX29 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_FX33() { console.log("TEST_FX33 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_FX55() { console.log("TEST_FX55 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
-    TEST_FX65() { console.log("TEST_FX65 START !"); console.log(JSON.stringify(this._Chip8.CPU)); }
+    TEST_00EE() { console.log("TEST_00EE START !"); this.printCPU_State(); }
+    TEST_1NNN() { console.log("TEST_1NNN START !"); this.printCPU_State(); }
+    TEST_2NNN() { console.log("TEST_2NNN START !"); this.printCPU_State(); }
+    TEST_3XNN() { console.log("TEST_3XNN START !"); this.printCPU_State(); }
+    TEST_4XNN() { console.log("TEST_4XNN START !"); this.printCPU_State(); }
+    TEST_5XY0() { console.log("TEST_5XY0 START !"); this.printCPU_State(); }
+    TEST_6XNN() { console.log("TEST_6XNN START !"); this.printCPU_State(); }
+    TEST_7XNN() { console.log("TEST_7XNN START !"); this.printCPU_State(); }
+    TEST_8XY0() { console.log("TEST_8XY0 START !"); this.printCPU_State(); }
+    TEST_8XY1() { console.log("TEST_8XY1 START !"); this.printCPU_State(); }
+    TEST_8XY2() { console.log("TEST_8XY2 START !"); this.printCPU_State(); }
+    TEST_BXY3() { console.log("TEST_BXY3 START !"); this.printCPU_State(); }
+    TEST_8XY4() { console.log("TEST_8XY4 START !"); this.printCPU_State(); }
+    TEST_8XY5() { console.log("TEST_8XY5 START !"); this.printCPU_State(); }
+    TEST_8XY6() { console.log("TEST_8XY6 START !"); this.printCPU_State(); }
+    TEST_8XY7() { console.log("TEST_8XY7 START !"); this.printCPU_State(); }
+    TEST_8XYE() { console.log("TEST_8XYE START !"); this.printCPU_State(); }
+    TEST_9XY0() { console.log("TEST_9XY0 START !"); this.printCPU_State(); }
+    TEST_ANNN() { console.log("TEST_ANNN START !"); this.printCPU_State(); }
+    TEST_BNNN() { console.log("TEST_BNNN START !"); this.printCPU_State(); }
+    TEST_CXNN() { console.log("TEST_CXNN START !"); this.printCPU_State(); }
+    TEST_DXYN() { console.log("TEST_DXYN START !"); this.printCPU_State(); }
+    TEST_EX9E() { console.log("TEST_EX9E START !"); this.printCPU_State(); }
+    TEST_EXA1() { console.log("TEST_EXA1 START !"); this.printCPU_State(); }
+    TEST_FX07() { console.log("TEST_FX07 START !"); this.printCPU_State(); }
+    TEST_FX0A() { console.log("TEST_FX0A START !"); this.printCPU_State(); }
+    TEST_FX15() { console.log("TEST_FX15 START !"); this.printCPU_State(); }
+    TEST_FX18() { console.log("TEST_FX18 START !"); this.printCPU_State(); }
+    TEST_FX1E() { console.log("TEST_FX1E START !"); this.printCPU_State(); }
+    TEST_FX29() { console.log("TEST_FX29 START !"); this.printCPU_State(); }
+    TEST_FX33() { console.log("TEST_FX33 START !"); this.printCPU_State(); }
+    TEST_FX55() { console.log("TEST_FX55 START !"); this.printCPU_State(); }
+    TEST_FX65() { console.log("TEST_FX65 START !"); this.printCPU_State(); }
 
 
 
@@ -106,7 +103,9 @@ class Test_Chip8Instance {
         return JSON.stringify(this._Chip8.CPU);
     }
     printCPU_State() {
-        console.log(JSON.stringify(this._Chip8.CPU));
+        if(this.SHOW_CPU_STATE){
+            console.log(this.getCPU_State());
+        }        
     }
 
     startTests() {
