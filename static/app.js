@@ -1,3 +1,5 @@
+//@ts-check
+
 class Chip8Instance {
   constructor(MonitorElement) {
     if (!MonitorElement) {
@@ -12,49 +14,56 @@ class Chip8Instance {
     this.currentKeysPressed = [];
     //time 1000 to get second as miliseconds
     this.decrementInterval = 1 / this.FPS * 1000;
+    this.initMemory();
+    this.initCPU();
+    this.operationTable = this.generateOpcodeTable();
+    this.monitorRes = { width: 64, height: 32 };
+    this.defaultColor = ["black", "white"];
+    this.monitorPixelReferences = [];
+
+    this.monitor = null;
+    this.monitor = MonitorElement;
+    this.initScreen();
+  }
+
+  initCPU() {
+    this.CPU = this.generateCPU();
+  }
+  initMemory() {
     /**
      * The use of an Uint8Array makes the overflow possible in JS ex 255 + 1 = 256 in normal condition,
      *  but here it will be 0
      */
     this.memory = new Uint8Array(4096);
-    this.CPU = this.generateCPU();
-    this.operationTable = this.generateOpcodeTable();
-    this.monitorRes = { width: 64, height: 32 };
-    this.defaultColor = ["black", "white"];
-    this.monitorPixelReferences = [];
+  }
+  initScreen() {
     /** 2D HTMLCollection */
     this.twoDimentionalMonitorArrayView = [[]];
     this.twoDimentionalMonitorArrayBuffer = Array.from(Array(this.monitorRes.height), () => new Array(this.monitorRes.width));
-    this.monitor = null;
-    this.monitor = MonitorElement;
     this.generateMonitor();
     this.setAllPixelToColor(this.defaultColor[1]);
   }
+
   injectOpCode(id) {
-    switch (id) {
-      case 0:
-        {
-          this.memory[this.CPU.programCounter] = 0x00;
-          this.memory[this.CPU.programCounter + 1] = 0xE0;
-          break;
-        }
-      default:
-        {
-          console.warn("not implemented !");
-        }
+    if (id === 0) {
+      this.memory[this.CPU.programCounter] = 0x00;
+      this.memory[this.CPU.programCounter + 1] = 0xE0;
+    } else {
+      console.warn("not implemented !");
     }
   }
   testOpCode() {
     let testCase = 1;
     for (var i = 0; i < testCase; i++) {
-      injectOpCode(i);
+      this.injectOpCode(i);
     }
   }
+
   /**
   * [get an opcode by reading the memory]
   * [behavior: since the memory is segmented in block of 8 bits and an opcode 16 bits
   * we do need to take 2 value from the memory instead of just one]
-  * @return {[Number]} [return technically an unsinedInt in 16 bits but we're in javascript soooo ;)]
+  * @return {Number} [return technically an unsinedInt in 16 bits but we're in javascript soooo ;)]
   */
   getOpcode() {
     return (this.memory[this.CPU.programCounter] << 8) + this.memory[this.CPU.programCounter + 1];
@@ -89,7 +98,7 @@ class Chip8Instance {
      * Define a random variable holding a random value for the current cycle
      */
     const randomCycleValue = window.crypto.getRandomValues(new Uint8Array(1))[0];
-    //console.log("opCodeId: ", opCodeId);
+
     switch (opCodeId) {
       case 0:
         {
@@ -319,7 +328,7 @@ class Chip8Instance {
             this.prettyPrintOpCode(randomCycleValue), " VX = random() & NN =", this.prettyPrintOpCode(result));
 
           this.CPU.register[VXAddress] = result;
-          randomCycleValue
+          /*randomCycleValue*/
 
           break;
         }
@@ -557,17 +566,17 @@ class Chip8Instance {
       this.monitorPixelReferences[i].className = "cell " + color;
     }
   }
-  draw(x, y, width, height){
-    let startingIndex = x*y;
-    
-    
+  draw(x, y, width, height) {
+    let startingIndex = x * y;
+
+
 
     for (; startingIndex < array.length; index++) {
       const element = array[index];
-      
+
     }
   }
-  
+
   updateScreen() {
     for (var i = this.twoDimentionalMonitorArrayView.length; i-- > 0;) {
       for (var j = this.twoDimentionalMonitorArrayView[i].length; j-- > 0;) {
@@ -575,7 +584,6 @@ class Chip8Instance {
       }
     }
   }
-  initCPU() { }
   counterDecrement() {
     if (this.CPU.delayTimer > 0) { this.CPU.delayTimer-- };
     if (this.CPU.soundTimer > 0) { this.CPU.soundTimer-- };
@@ -660,7 +668,7 @@ class Chip8Instance {
       for (y = 0; y < this.monitorRes.width; y++) {
         result = this.defaultColor[0];
         this.twoDimentionalMonitorArrayBuffer[x][y] = result;
-        this.twoDimentionalMonitorArrayBuffer[x][y] = result;
+        /*this.twoDimentionalMonitorArrayBuffer[x][y] = result;*/
       }
     }
     this.updateScreen();
@@ -699,7 +707,7 @@ class Chip8Instance {
   }
 
   async wait(t) {
-    return await new Promise(resolve => {
+    return new Promise(resolve => {
       setTimeout(() => {
         //console.error("time to wait: ", t);
         resolve();
@@ -742,7 +750,7 @@ class Chip8Instance {
     console.log("this.memory: ", this.memory);
   }
   async getByteArrayFromBlob(blob) {
-    return await new Promise(resolve => {
+    return new Promise(resolve => {
       let reader = new FileReader();
       reader.addEventListener("loadend", () => {
         resolve(new Uint8Array(reader.result));
@@ -751,7 +759,7 @@ class Chip8Instance {
     });
   }
   async getBlob(blobUrl) {
-    return await new Promise(resolve => {
+    return new Promise(resolve => {
       let oReq = new XMLHttpRequest();
       oReq.open("GET", blobUrl);
       oReq.responseType = "blob";
@@ -780,6 +788,14 @@ async function start() {
   currentInstance.start("./program/lol.ch8");
 }
 
+async function startTest() {
+  let currentInstance = StartChip8();
+
+
+  const testInstance = new Test_Chip8Instance(currentInstance);
+  testInstance.startTests();
+}
+
 async function testFunction(chip8Instance) {
   let lastStep = "start";
   let t1 = null;
@@ -794,4 +810,6 @@ async function testFunction(chip8Instance) {
     console.error("failed on step : [", lastStep, "] got stack: ", e);
   }
 }
-start();
+/*start();*/
+
+startTest();
