@@ -68,7 +68,13 @@ class Chip8Instance {
   getOpcode() {
     return (this.memory[this.CPU.programCounter] << 8) + this.memory[this.CPU.programCounter + 1];
   }
+
+
   getOperationFromOpcode(opcode) {
+    /**
+     * TODO:
+     * Maybe try to rearange the operationTable to place most used opcode conveniently at the beginning of the loop
+     */
     for (let i = this.opCodeAmount; i-- > 0;) {
       if ((this.operationTable.mask[i] & opcode) === this.operationTable.id[i]) {
         return i;
@@ -95,6 +101,7 @@ class Chip8Instance {
      */
     let b1 = (opcode & 0x000F);
     /**
+     * Maybe move it in the opcode using it instead of running it for every opcode
      * Define a random variable holding a random value for the current cycle
      */
     const randomCycleValue = window.crypto.getRandomValues(new Uint8Array(1))[0];
@@ -120,7 +127,7 @@ class Chip8Instance {
         {
           console.log("MAYBE! 00EE : returns from a function");
           if (this.CPU.stackJumpCounter > 0) {
-            /** return to previous stack index(should be valued with the calee adress right ?? :) who knows lol) */
+            /** return to previous stack index(should be valued with the calee address right ?? :) who knows lol) */
             this.CPU.stackJumpCounter--;
           }
           this.CPU.programCounter = this.CPU.stackJumpCounter;
@@ -537,11 +544,10 @@ class Chip8Instance {
     }
   }
   generateMonitor() {
-    console.log("this.monitor: ", this.monitor);
+    /*console.log("this.monitor: ", this.monitor);*/
     let row = null;
     let cell = null;
     let pixelID = 0;
-    //let domFragment = document.createDocumentFragment();
     for (let i = 0; i < this.monitorRes.height; i++) {
       row = document.createElement("section");
       row.className = "row row_" + i;
@@ -557,7 +563,6 @@ class Chip8Instance {
         row.appendChild(cell);
         pixelID++;
       }
-      //domFragment.appendChild(row);
       this.monitor.appendChild(row);
     }
   }
