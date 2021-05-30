@@ -607,6 +607,7 @@ class Chip8Instance {
       }
     }
   }
+  
   counterDecrement() {
     if (this.CPU.delayTimer > 0) { this.CPU.delayTimer-- };
     if (this.CPU.soundTimer > 0) { this.CPU.soundTimer-- };
@@ -653,6 +654,7 @@ class Chip8Instance {
       this.testScreen();
     }
   }
+
   testPixelInverted() {
     let x = this.monitorRes.height;
     let y = this.monitorRes.width;
@@ -668,6 +670,7 @@ class Chip8Instance {
     }
     this.updateScreen();
   }
+
   testPixel() {
     let x = 0;
     let y = 0;
@@ -683,6 +686,7 @@ class Chip8Instance {
     }
     this.updateScreen();
   }
+
   blackScreen() {
     let x = 0;
     let y = 0;
@@ -696,6 +700,7 @@ class Chip8Instance {
     }
     this.updateScreen();
   }
+
   async slowFill(whiteFill) {
     const timing = 0.1;
     let x = 0;
@@ -714,8 +719,8 @@ class Chip8Instance {
         await this.wait(timing);
       }
     }
-
   }
+
   whiteScreen() {
     let x = 0;
     let y = 0;
@@ -742,27 +747,35 @@ class Chip8Instance {
     this.mainLoop();
     return;
   }
+
+  async makeCycle(opcode) {
+    opcode = opcode || this.getOpcode();
+    //console.log("opcode: ", opcode.toString(16).toUpperCase());
+    await this.doOperation(opcode);
+    this.updateScreen();
+    this.counterDecrement();
+  }
+
   async mainLoop() {
-    let t1, t2, t3, opcode;
+    let t1, t2, t3;
     while (this.mainThreadSwitch) {
       t1 = performance.now();
-      opcode = this.getOpcode();
-      //console.log("opcode: ", opcode.toString(16).toUpperCase());
-      await this.doOperation(opcode);
-      this.updateScreen();
-      this.counterDecrement();
+      await this.makeCycle();
       t2 = performance.now();
       await this.wait(this.timeBetweenFrame - (t2 - t1) + 100);
       t3 = performance.now();
       //console.error("lol", (t3 - t2), "ms");
     }
   }
+
   stopMainThread() {
     this.mainThreadSwitch = false;
   }
+
   mainThreadSwitchTrigger() {
     this.mainThreadSwitch = !this.mainThreadSwitch;
   }
+
   async loadProgram(programUrl) {
     const programBlob = await this.getBlob(programUrl);
     this.programCode = await this.getByteArrayFromBlob(programBlob);
@@ -772,6 +785,7 @@ class Chip8Instance {
     }
     console.log("this.memory: ", this.memory);
   }
+
   async getByteArrayFromBlob(blob) {
     return new Promise(resolve => {
       let reader = new FileReader();
@@ -781,6 +795,7 @@ class Chip8Instance {
       reader.readAsArrayBuffer(blob);
     });
   }
+
   async getBlob(blobUrl) {
     return new Promise(resolve => {
       let oReq = new XMLHttpRequest();

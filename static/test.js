@@ -258,7 +258,7 @@ class Test_Chip8Instance {
         }
 
         if (testErrorCount == 0) {
-            console.log("There is no known error GOOD JOB !");
+            console.log("%cThere is no known error GOOD JOB !", "color: blue; font-size:1.3em");
         } else {
             console.log("There is " + testErrorCount + " known errors !");
         }
