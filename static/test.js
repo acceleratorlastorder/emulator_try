@@ -117,11 +117,18 @@ class Test_Chip8Instance {
         return result;
     }
 
-    TEST_0NNN() { const testName = "TEST_0NNN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_00E0() {
-        const testName = "TEST_00E0";
+    testInit(opcodeTested) {
+        const testName = "TEST_" + opcodeTested;
         console.log(testName + " START !");
         this.printCPU_State();
+
+        return testName;
+    }
+
+
+    TEST_0NNN() { const _testName = this.testInit("0NNN"); }
+    TEST_00E0() {
+        const _testName = this.testInit("00E0");
         let result = true;
 
         this._Chip8.doOperation(0x00E0);
@@ -137,18 +144,16 @@ class Test_Chip8Instance {
 
         return result;
     }
-    TEST_00EE() { const testName = "TEST_00EE"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_1NNN() { const testName = "TEST_1NNN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_2NNN() { const testName = "TEST_2NNN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_3XNN() { const testName = "TEST_3XNN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_4XNN() { const testName = "TEST_4XNN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_5XY0() { const testName = "TEST_5XY0"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_6XNN() { const testName = "TEST_6XNN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_7XNN() { const testName = "TEST_7XNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_00EE() { const _testName = this.testInit("00EE"); }
+    TEST_1NNN() { const _testName = this.testInit("1NNN"); }
+    TEST_2NNN() { const _testName = this.testInit("2NNN"); }
+    TEST_3XNN() { const _testName = this.testInit("3XNN"); }
+    TEST_4XNN() { const _testName = this.testInit("4XNN"); }
+    TEST_5XY0() { const _testName = this.testInit("5XY0"); }
+    TEST_6XNN() { const _testName = this.testInit("6XNN"); }
+    TEST_7XNN() { const _testName = this.testInit("7XNN"); }
     TEST_8XY0() {
-        const testName = "TEST_8XY0";
-        console.log(testName + " START !");
-        this.printCPU_State();
+        const _testName = this.testInit("8XY0");
         let result = true;
 
         /****************** 0X8A70 ******************/
@@ -160,7 +165,7 @@ class Test_Chip8Instance {
         /** basic overflowTest */
         const registerToOverflow = Y;
         const valueOverflow = YRegisterValue;
-        this.initOverFlowTest(testName, registerToOverflow, valueOverflow);
+        this.initOverFlowTest(_testName, registerToOverflow, valueOverflow);
 
 
         let opcode = this.createOpCode(0x8, X, Y, 0x0);
@@ -171,7 +176,7 @@ class Test_Chip8Instance {
 
         if (VX !== VY) {
             const message = `failed [VX === VY] test, got VX == ${VX} for VY == ${VX}`;
-            this.addReportingToTest(testName, message);
+            this.addReportingToTest(_testName, message);
             result = false;
         }
 
@@ -191,7 +196,7 @@ class Test_Chip8Instance {
         if (!(VX === VY && VX === YRegisterValue)) {
             let message = `failed [VX === VY && VX === YRegisterValue] test, got VX == ${VX} for VY == ${VY}
              and YRegisterValue == ${YRegisterValue}`;
-            this.addReportingToTest(testName, message);
+            this.addReportingToTest(_testName, message);
             result = false;
         }
 
@@ -199,30 +204,33 @@ class Test_Chip8Instance {
 
         return result;
     }
-    TEST_8XY1() { const testName = "TEST_8XY1"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_8XY2() { const testName = "TEST_8XY2"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_BXY3() { const testName = "TEST_BXY3"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_8XY4() { const testName = "TEST_8XY4"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_8XY5() { const testName = "TEST_8XY5"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_8XY6() { const testName = "TEST_8XY6"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_8XY7() { const testName = "TEST_8XY7"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_8XYE() { const testName = "TEST_8XYE"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_9XY0() { const testName = "TEST_9XY0"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_ANNN() { const testName = "TEST_ANNN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_BNNN() { const testName = "TEST_BNNN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_CXNN() { const testName = "TEST_CXNN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_DXYN() { const testName = "TEST_DXYN"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_EX9E() { const testName = "TEST_EX9E"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_EXA1() { const testName = "TEST_EXA1"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_FX07() { const testName = "TEST_FX07"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_FX0A() { const testName = "TEST_FX0A"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_FX15() { const testName = "TEST_FX15"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_FX18() { const testName = "TEST_FX18"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_FX1E() { const testName = "TEST_FX1E"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_FX29() { const testName = "TEST_FX29"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_FX33() { const testName = "TEST_FX33"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_FX55() { const testName = "TEST_FX55"; console.log(testName + " START !"); this.printCPU_State(); }
-    TEST_FX65() { const testName = "TEST_FX65"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_8XY1() {
+        const _testName = this.testInit("8XY1");
+
+    }
+    TEST_8XY2() { const _testName = this.testInit("8XY2"); }
+    TEST_BXY3() { const _testName = this.testInit("BXY3"); }
+    TEST_8XY4() { const _testName = this.testInit("8XY4"); }
+    TEST_8XY5() { const _testName = this.testInit("8XY5"); }
+    TEST_8XY6() { const _testName = this.testInit("8XY6"); }
+    TEST_8XY7() { const _testName = this.testInit("8XY7"); }
+    TEST_8XYE() { const _testName = this.testInit("8XYE"); }
+    TEST_9XY0() { const _testName = this.testInit("9XY0"); }
+    TEST_ANNN() { const _testName = this.testInit("ANNN"); }
+    TEST_BNNN() { const _testName = this.testInit("BNNN"); }
+    TEST_CXNN() { const _testName = this.testInit("CXNN"); }
+    TEST_DXYN() { const _testName = this.testInit("DXYN"); }
+    TEST_EX9E() { const _testName = this.testInit("EX9E"); }
+    TEST_EXA1() { const _testName = this.testInit("EXA1"); }
+    TEST_FX07() { const _testName = this.testInit("FX07"); }
+    TEST_FX0A() { const _testName = this.testInit("FX0A"); }
+    TEST_FX15() { const _testName = this.testInit("FX15"); }
+    TEST_FX18() { const _testName = this.testInit("FX18"); }
+    TEST_FX1E() { const _testName = this.testInit("FX1E"); }
+    TEST_FX29() { const _testName = this.testInit("FX29"); }
+    TEST_FX33() { const _testName = this.testInit("FX33"); }
+    TEST_FX55() { const _testName = this.testInit("FX55"); }
+    TEST_FX65() { const _testName = this.testInit("FX65"); }
 
     startTests() {
 
