@@ -25,6 +25,27 @@ class Test_Chip8Instance {
     }
 
     /**
+     * [TEST_NAME]:MESSAGE: String
+     */
+    testReportMap = {};
+
+    /**
+     * 
+     * @param {String} testName 
+     * @param {String} message 
+     * @returns 
+     */
+    addReportingToTest(testName, message) {
+        if (this.testReportMap[testName]) {
+            this.testReportMap[testName] += "\n    " + message;
+        } else {
+            this.testReportMap[testName] = "[" + testName + "]:\n    " + message;
+        }
+        return true;
+    }
+
+
+    /**
      * 
      * @param {Function} testToStart 
      */
@@ -46,15 +67,14 @@ class Test_Chip8Instance {
     TEST_0NNN() { console.log("TEST_0NNN START !"); this.printCPU_State(); }
     TEST_00E0() {
         console.log("TEST_00E0 START !");
-        this.printCPU_State(); 
+        this.printCPU_State();
         let result = true;
-        const chip8Ctx = this._Chip8;
 
-        chip8Ctx.doOperation(0x00E0);
+        this._Chip8.doOperation(0x00E0);
 
-        for (let x = chip8Ctx.monitorRes.height; x-- > 0;) {
-            for (let y = chip8Ctx.monitorRes.width; y-- > 0;) {
-                if (chip8Ctx.twoDimentionalMonitorArrayBuffer[x][y] !== "black") {
+        for (let x = this._Chip8.monitorRes.height; x-- > 0;) {
+            for (let y = this._Chip8.monitorRes.width; y-- > 0;) {
+                if (this._Chip8.twoDimentionalMonitorArrayBuffer[x][y] !== "black") {
                     result = false;
                     break;
                 }
@@ -71,7 +91,42 @@ class Test_Chip8Instance {
     TEST_5XY0() { console.log("TEST_5XY0 START !"); this.printCPU_State(); }
     TEST_6XNN() { console.log("TEST_6XNN START !"); this.printCPU_State(); }
     TEST_7XNN() { console.log("TEST_7XNN START !"); this.printCPU_State(); }
-    TEST_8XY0() { console.log("TEST_8XY0 START !"); this.printCPU_State(); }
+    TEST_8XY0() {
+        console.log("TEST_8XY0 START !");
+        this.printCPU_State();
+        let result = false;
+
+        /** 0X8A70 */
+        let X = 0xA;
+        let Y = 0x7;
+
+        /** basic overflowTest */
+        this._Chip8.CPU.register[Y] = 666;
+        /** Check if overflow is managed */
+        if (this._Chip8.CPU.register[Y] !== (666 - 256 - 256)) {
+            const message = "overflow not properly handled got: " + this._Chip8.CPU.register[Y];
+            this.addReportingToTest("TEST_8XY0", message);
+            return false;
+        }
+
+
+
+        let opcode = this.createOpCode(0x8, X, Y, 0x0);
+        this._Chip8.doOperation(opcode);
+
+        let VX = this._Chip8.CPU.register[X];
+        let VY = this._Chip8.CPU.register[Y];
+
+        if (VX === VY) {
+            result = true;
+        }
+
+
+
+        this.printCPU_State();
+
+        return result;
+    }
     TEST_8XY1() { console.log("TEST_8XY1 START !"); this.printCPU_State(); }
     TEST_8XY2() { console.log("TEST_8XY2 START !"); this.printCPU_State(); }
     TEST_BXY3() { console.log("TEST_BXY3 START !"); this.printCPU_State(); }
@@ -98,14 +153,26 @@ class Test_Chip8Instance {
     TEST_FX65() { console.log("TEST_FX65 START !"); this.printCPU_State(); }
 
 
+    /**
+     * TODO: Find a better name for the arguments lol
+     * @param {Number} A first 4bit
+     * @param {Number} B second 4bit
+     * @param {Number} C third 4bit
+     * @param {Number} D last 4bit
+     * @returns {Number}
+     */
+    createOpCode(A, B, C, D) {
+        return ((A << 12) + (B << 8) + (C << 4) + (D));
+    }
+
 
     getCPU_State() {
         return JSON.stringify(this._Chip8.CPU);
     }
     printCPU_State() {
-        if(this.SHOW_CPU_STATE){
+        if (this.SHOW_CPU_STATE) {
             console.log(this.getCPU_State());
-        }        
+        }
     }
 
     startTests() {
@@ -126,6 +193,9 @@ class Test_Chip8Instance {
                 if (!testResult) {
                     testErrorCount++;
                     console.log(testName + " did not pass the test");
+                    if (this.testReportMap[testName]) {
+                        console.error(this.testReportMap[testName]);
+                    }
                 }
             }
         }
@@ -138,14 +208,17 @@ class Test_Chip8Instance {
 
     }
 
+    /*
+     * "0NNN", "00E0", "00EE", "1NNN", "2NNN", "3XNN",
+     * "4XNN", "5XY0", "6XNN", "7XNN", "8XY0", "8XY1",
+     * "8XY2", "BXY3", "8XY4", "8XY5", "8XY6", "8XY7",
+     * "8XYE", "9XY0", "ANNN", "BNNN", "CXNN", "DXYN",
+     * "EX9E", "EXA1", "FX07", "FX0A", "FX15", "FX18",
+     * "FX1E", "FX29", "FX33", "FX55", "FX65"
+     */
+
     instructionAvailable = [
-        "0NNN", "00E0",
-        /*"00EE", "1NNN", "2NNN", "3XNN",
-        "4XNN", "5XY0", "6XNN", "7XNN", "8XY0", "8XY1",
-        "8XY2", "BXY3", "8XY4", "8XY5", "8XY6", "8XY7",
-        "8XYE", "9XY0", "ANNN", "BNNN", "CXNN", "DXYN",
-        "EX9E", "EXA1", "FX07", "FX0A", "FX15", "FX18",
-        "FX1E", "FX29", "FX33", "FX55", "FX65"*/
+        "00E0", "8XY0"
     ];
 
     /** @type {Function[]} */

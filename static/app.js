@@ -60,6 +60,24 @@ class Chip8Instance {
   }
 
   /**
+   * 
+   * @param {Number} register 16 addresses
+   * @returns {Number} return the value contained in register [register]
+   */
+  getRegister(register) {
+    return this.CPU.register[register];
+  }
+
+  /**
+   * 
+   * @param {Number} register 16 addresses
+   * @param {Number} value Uint8
+   */
+  setRegister(register, value) {
+    this.CPU.register[register] = value;
+  }
+
+  /**
   * [get an opcode by reading the memory]
   * [behavior: since the memory is segmented in block of 8 bits and an opcode 16 bits
   * we do need to take 2 value from the memory instead of just one]
@@ -183,7 +201,7 @@ class Chip8Instance {
         {
           const VX = this.CPU.register[b3];
           const VY = this.CPU.register[b2];
-          this.logger("MAYBE! 5XY0 : skips the next instruction if VX === VY; VX: ", this.prettyPrintOpCode(VX), " NN: ", this.prettyPrintOpCode(NN));
+          this.logger("MAYBE! 5XY0 : skips the next instruction if VX === VY; VX: ", this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY));
           if (VX === VY) {
             /** jump 2 8bit chunk to the next opcode (to the moon as they says) */
             this.CPU.programCounter += 2;
@@ -304,7 +322,7 @@ class Chip8Instance {
           const VX = this.CPU.register[b3];
           const VY = this.CPU.register[b2];
           this.logger("MAYBE! 9XY0 : skip the next instruction if VX !== VY; VX:", this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY));
-          if (VX !== NN) {
+          if (VX !== VY) {
             /** jump 2 8bit chunk to the next opcode (to the moon as they says) */
             this.CPU.programCounter += 2;
           }
