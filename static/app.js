@@ -197,7 +197,7 @@ class Chip8Instance {
         }
       case 5:
         {
-          const VX = this.CPU.register[b3];
+          const VX = this.getRegister(b3);
           const NN = opcode & 0x00FF;
           this.logger("MAYBE! 3XNN : skips the next instruction if VX === NN; VX: ", this.prettyPrintOpCode(VX), " NN: ", this.prettyPrintOpCode(NN));
 
@@ -210,7 +210,7 @@ class Chip8Instance {
         }
       case 6:
         {
-          const VX = this.CPU.register[b3];
+          const VX = this.getRegister(b3);
           const NN = opcode & 0x00FF;
           this.logger("MAYBE! 4XNN : skips the next instruction if VX !== NN; VX: ", this.prettyPrintOpCode(VX), " NN: ", this.prettyPrintOpCode(NN));
           if (VX !== NN) {
@@ -221,8 +221,8 @@ class Chip8Instance {
         }
       case 7:
         {
-          const VX = this.CPU.register[b3];
-          const VY = this.CPU.register[b2];
+          const VX = this.getRegister(b3);
+          const VY = this.getRegister(b2);
           this.logger("MAYBE! 5XY0 : skips the next instruction if VX === VY; VX: ", this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY));
           if (VX === VY) {
             /** jump 2 8bit chunk to the next opcode (to the moon as they says) */
@@ -251,7 +251,7 @@ class Chip8Instance {
       case 10:
         {
           const VXAddress = b3;
-          const VY = this.CPU.register[b2];
+          const VY = this.getRegister(b2);
           this.logger("DONE! 8XY0 : sets VX to VY (VX = VY)");
 
           this.CPU.register[VXAddress] = VY;
@@ -259,10 +259,10 @@ class Chip8Instance {
         }
       case 11:
         {
-          const VX = this.CPU.register[b3];
-          const VY = this.CPU.register[b2];
+          const VX = this.getRegister(b3);
+          const VY = this.getRegister(b2);
           const registerNewValue = VX | VY;
-          this.logger("MAYBE! 8XY1 : sets VX to VX or VY (bitwise VX = VX|VY); VX:",
+          this.logger("TODO! 8XY1 : sets VX to VX or VY (bitwise VX = VX|VY); VX:",
             this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY),
             " VX|VY = ", registerNewValue);
 
@@ -271,10 +271,10 @@ class Chip8Instance {
         }
       case 12:
         {
-          const VX = this.CPU.register[b3];
-          const VY = this.CPU.register[b2];
+          const VX = this.getRegister(b3);
+          const VY = this.getRegister(b2);
           const registerNewValue = VX & VY;
-          this.logger("MAYBE! 8XY2 : sets VX to VX and VY (bitwise VX = VX&VY); VX:",
+          this.logger("TODO! 8XY2 : sets VX to VX and VY (bitwise VX = VX&VY); VX:",
             this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY),
             " VX&VY = ", registerNewValue);
 
@@ -283,8 +283,8 @@ class Chip8Instance {
         }
       case 13:
         {
-          const VX = this.CPU.register[b3];
-          const VY = this.CPU.register[b2];
+          const VX = this.getRegister(b3);
+          const VY = this.getRegister(b2);
           const registerNewValue = VX ^ VY;
           this.logger("MAYBE! 8XY3 : sets VX to VX xor VY; (bitwise VX = VX^VY); VX:",
             this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY),
@@ -316,9 +316,9 @@ class Chip8Instance {
             /** Set VF to 0 since the value is inf to 0 (Remember thanks to JS the result variable might be = -666 
               *    once we will insert this value into the 8bit register it will be converted into 102)
               */
-            this.CPU.register[0xF] = 0;
+            this.setCarryFlag(0);
           } else {
-            this.CPU.register[0xF] = 1;
+            this.setCarryFlag(1);
           }
 
           this.CPU.register[VXAddress] = result;
@@ -341,8 +341,8 @@ class Chip8Instance {
         }
       case 19:
         {
-          const VX = this.CPU.register[b3];
-          const VY = this.CPU.register[b2];
+          const VX = this.getRegister(b3);
+          const VY = this.getRegister(b2);
           this.logger("MAYBE! 9XY0 : skip the next instruction if VX !== VY; VX:", this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY));
           if (VX !== VY) {
             /** jump 2 8bit chunk to the next opcode (to the moon as they says) */
@@ -381,8 +381,8 @@ class Chip8Instance {
         }
       case 23:
         {
-          const VX = this.CPU.register[b3];
-          const VY = this.CPU.register[b2];
+          const VX = this.getRegister(b3);
+          const VY = this.getRegister(b2);
           const N = b1;
           this.logger("MAYBE! DXYN : draws a sprite at the coordinate VX and VY with a fixed width of 8 pixel and the height is define by N N: ",
             this.prettyPrintOpCode(N), " VX: ", this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY));
@@ -406,9 +406,9 @@ class Chip8Instance {
         {
           const VXAddress = b3;
           this.logger("MAYBE! FX07 : Sets VX to the value of the delay timer; VX: ",
-            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " delayTimer:", this.CPU.delayTimer);
+            this.prettyPrintOpCode(this.getRegister(VXAddress)), " delayTimer:", this.CPU.delayTimer);
 
-          this.CPU.register[VXAddress] = this.CPU.delayTimer;
+          this.setRegister(VXAddress, this.CPU.delayTimer);
           break;
         }
       case 27:
@@ -431,23 +431,23 @@ class Chip8Instance {
         {
           const VXAddress = b3;
           this.logger("MAYBE! FX15 : sets the delay timer to VX; VX: ",
-            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " delayTimer:", this.CPU.delayTimer);
+            this.prettyPrintOpCode(this.getRegister(VXAddress)), " delayTimer:", this.CPU.delayTimer);
 
-          this.CPU.delayTimer = this.CPU.register[VXAddress];
+          this.CPU.delayTimer = this.getRegister(VXAddress);
           break;
         }
       case 29:
         {
           const VXAddress = b3;
           this.logger("MAYBE! FX18 : sets the sound timer to VX; VX: ",
-            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " soundTimer:", this.CPU.soundTimer);
+            this.prettyPrintOpCode(this.getRegister(VXAddress)), " soundTimer:", this.CPU.soundTimer);
 
-          this.CPU.soundTimer = this.CPU.register[VXAddress];
+          this.CPU.soundTimer = this.getRegister(VXAddress);
           break;
         }
       case 30:
         {
-          const VX = this.CPU.register[b3];
+          const VX = this.getRegister(b3);
           let result = this.CPU.registerCounter + VX;
           this.logger("TODO! FX1E : Adds VX to I(registerCounter). VF is not affected; VX:",
             VX, " I =", this.CPU.registerCounter, " VX + I = ", result);
@@ -660,6 +660,8 @@ class Chip8Instance {
     let startingIndex = x + (this.monitorRes.width * y);
     let color = this.defaultColor[0];
 
+    let currentColor = "";
+
     let coordX = x;
     let coordY = y;
 
@@ -686,8 +688,14 @@ class Chip8Instance {
       for (; widthLeft !== 0; widthLeft--) {
         coordY = (width - widthLeft);
         newIndex = startingIndex + coordY;
-        const element = this.monitorPixelReferences[newIndex];
+        /*const element = this.monitorPixelReferences[newIndex];
         element.className = "cell " + color;
+        */
+        currentColor = this.twoDimentionalMonitorArrayBuffer[coordX][coordY];
+        if (currentColor != color) {
+          this.setCarryFlag(1);
+        }
+
         this.twoDimentionalMonitorArrayBuffer[coordX][coordY] = color;
       }
     }
