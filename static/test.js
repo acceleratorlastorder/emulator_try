@@ -25,135 +25,6 @@ class Test_Chip8Instance {
     }
 
     /**
-     * [TEST_NAME]:MESSAGE: String
-     */
-    testReportMap = {};
-
-    /**
-     * 
-     * @param {String} testName 
-     * @param {String} message 
-     * @returns 
-     */
-    addReportingToTest(testName, message) {
-        if (this.testReportMap[testName]) {
-            this.testReportMap[testName] += "\n    " + message;
-        } else {
-            this.testReportMap[testName] = "[" + testName + "]:\n    " + message;
-        }
-        return true;
-    }
-
-
-    /**
-     * 
-     * @param {Function} testToStart 
-     */
-    launchTest(testToStart) {
-        this.resetState();
-
-        console.log("TESTING: " + testToStart.name);
-        let result = false;
-
-        try {
-            result = testToStart.apply(this);
-        } catch (error) {
-            result = false;
-        }
-
-        return result;
-    }
-
-    TEST_0NNN() { console.log("TEST_0NNN START !"); this.printCPU_State(); }
-    TEST_00E0() {
-        console.log("TEST_00E0 START !");
-        this.printCPU_State();
-        let result = true;
-
-        this._Chip8.doOperation(0x00E0);
-
-        for (let x = this._Chip8.monitorRes.height; x-- > 0;) {
-            for (let y = this._Chip8.monitorRes.width; y-- > 0;) {
-                if (this._Chip8.twoDimentionalMonitorArrayBuffer[x][y] !== "black") {
-                    result = false;
-                    break;
-                }
-            }
-        }
-
-        return result;
-    }
-    TEST_00EE() { console.log("TEST_00EE START !"); this.printCPU_State(); }
-    TEST_1NNN() { console.log("TEST_1NNN START !"); this.printCPU_State(); }
-    TEST_2NNN() { console.log("TEST_2NNN START !"); this.printCPU_State(); }
-    TEST_3XNN() { console.log("TEST_3XNN START !"); this.printCPU_State(); }
-    TEST_4XNN() { console.log("TEST_4XNN START !"); this.printCPU_State(); }
-    TEST_5XY0() { console.log("TEST_5XY0 START !"); this.printCPU_State(); }
-    TEST_6XNN() { console.log("TEST_6XNN START !"); this.printCPU_State(); }
-    TEST_7XNN() { console.log("TEST_7XNN START !"); this.printCPU_State(); }
-    TEST_8XY0() {
-        console.log("TEST_8XY0 START !");
-        this.printCPU_State();
-        let result = false;
-
-        /** 0X8A70 */
-        let X = 0xA;
-        let Y = 0x7;
-
-        /** basic overflowTest */
-        this._Chip8.CPU.register[Y] = 666;
-        /** Check if overflow is managed */
-        if (this._Chip8.CPU.register[Y] !== (666 - 256 - 256)) {
-            const message = "overflow not properly handled got: " + this._Chip8.CPU.register[Y];
-            this.addReportingToTest("TEST_8XY0", message);
-            return false;
-        }
-
-
-
-        let opcode = this.createOpCode(0x8, X, Y, 0x0);
-        this._Chip8.doOperation(opcode);
-
-        let VX = this._Chip8.CPU.register[X];
-        let VY = this._Chip8.CPU.register[Y];
-
-        if (VX === VY) {
-            result = true;
-        }
-
-
-
-        this.printCPU_State();
-
-        return result;
-    }
-    TEST_8XY1() { console.log("TEST_8XY1 START !"); this.printCPU_State(); }
-    TEST_8XY2() { console.log("TEST_8XY2 START !"); this.printCPU_State(); }
-    TEST_BXY3() { console.log("TEST_BXY3 START !"); this.printCPU_State(); }
-    TEST_8XY4() { console.log("TEST_8XY4 START !"); this.printCPU_State(); }
-    TEST_8XY5() { console.log("TEST_8XY5 START !"); this.printCPU_State(); }
-    TEST_8XY6() { console.log("TEST_8XY6 START !"); this.printCPU_State(); }
-    TEST_8XY7() { console.log("TEST_8XY7 START !"); this.printCPU_State(); }
-    TEST_8XYE() { console.log("TEST_8XYE START !"); this.printCPU_State(); }
-    TEST_9XY0() { console.log("TEST_9XY0 START !"); this.printCPU_State(); }
-    TEST_ANNN() { console.log("TEST_ANNN START !"); this.printCPU_State(); }
-    TEST_BNNN() { console.log("TEST_BNNN START !"); this.printCPU_State(); }
-    TEST_CXNN() { console.log("TEST_CXNN START !"); this.printCPU_State(); }
-    TEST_DXYN() { console.log("TEST_DXYN START !"); this.printCPU_State(); }
-    TEST_EX9E() { console.log("TEST_EX9E START !"); this.printCPU_State(); }
-    TEST_EXA1() { console.log("TEST_EXA1 START !"); this.printCPU_State(); }
-    TEST_FX07() { console.log("TEST_FX07 START !"); this.printCPU_State(); }
-    TEST_FX0A() { console.log("TEST_FX0A START !"); this.printCPU_State(); }
-    TEST_FX15() { console.log("TEST_FX15 START !"); this.printCPU_State(); }
-    TEST_FX18() { console.log("TEST_FX18 START !"); this.printCPU_State(); }
-    TEST_FX1E() { console.log("TEST_FX1E START !"); this.printCPU_State(); }
-    TEST_FX29() { console.log("TEST_FX29 START !"); this.printCPU_State(); }
-    TEST_FX33() { console.log("TEST_FX33 START !"); this.printCPU_State(); }
-    TEST_FX55() { console.log("TEST_FX55 START !"); this.printCPU_State(); }
-    TEST_FX65() { console.log("TEST_FX65 START !"); this.printCPU_State(); }
-
-
-    /**
      * TODO: Find a better name for the arguments lol
      * @param {Number} A first 4bit
      * @param {Number} B second 4bit
@@ -174,6 +45,184 @@ class Test_Chip8Instance {
             console.log(this.getCPU_State());
         }
     }
+
+    /**
+     * [TEST_NAME]:MESSAGE: String
+     */
+    testReportMap = {};
+
+    /**
+     * 
+     * @param {String} testName 
+     * @param {String} message 
+     * @returns 
+     */
+    addReportingToTest(testName, message) {
+        if (this.testReportMap[testName]) {
+            this.testReportMap[testName] += "\n    " + message;
+        } else {
+            this.testReportMap[testName] = "[" + testName + "]:\n    " + message;
+        }
+        return true;
+    }
+
+    /**
+     * 
+     * @param {Number} register 
+     * @param {Number} register 
+     * @returns {Boolean} return true if passed
+     */
+    testOverflow(register, value) {
+
+        while (value > 256) {
+            value -= 256;
+        }
+
+        /** Check if overflow is managed */
+        return this._Chip8.getRegister(register) === (value);
+
+    }
+
+    /**
+     * 
+     * @param {String} testName 
+     * @param {Number} registerToOverflow 
+     * @param {Number} valueOverflow 
+     */
+    initOverFlowTest(testName, registerToOverflow, valueOverflow) {
+        this._Chip8.setRegister(registerToOverflow, valueOverflow);
+        const overflowTest = this.testOverflow(registerToOverflow, valueOverflow);
+        if (!overflowTest) {
+            const message = "overflow not properly handled got: " + this._Chip8.getRegister(registerToOverflow);
+            this.addReportingToTest(testName, message);
+        }
+    }
+
+    /**
+     * 
+     * @param {Function} testToStart 
+     */
+    launchTest(testToStart) {
+        this.resetState();
+
+        console.log("TESTING: " + testToStart.name);
+        let result = false;
+
+        try {
+            result = testToStart.apply(this);
+        } catch (error) {
+            result = false;
+        }
+
+        return result;
+    }
+
+    TEST_0NNN() { const testName = "TEST_0NNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_00E0() {
+        const testName = "TEST_00E0";
+        console.log(testName + " START !");
+        this.printCPU_State();
+        let result = true;
+
+        this._Chip8.doOperation(0x00E0);
+
+        for (let x = this._Chip8.monitorRes.height; x-- > 0;) {
+            for (let y = this._Chip8.monitorRes.width; y-- > 0;) {
+                if (this._Chip8.twoDimentionalMonitorArrayBuffer[x][y] !== "black") {
+                    result = false;
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+    TEST_00EE() { const testName = "TEST_00EE"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_1NNN() { const testName = "TEST_1NNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_2NNN() { const testName = "TEST_2NNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_3XNN() { const testName = "TEST_3XNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_4XNN() { const testName = "TEST_4XNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_5XY0() { const testName = "TEST_5XY0"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_6XNN() { const testName = "TEST_6XNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_7XNN() { const testName = "TEST_7XNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_8XY0() {
+        const testName = "TEST_8XY0";
+        console.log(testName + " START !");
+        this.printCPU_State();
+        let result = true;
+
+        /****************** 0X8A70 ******************/
+        let X = 0xA;
+        let Y = 0x7;
+
+        let YRegisterValue = 666;
+
+        /** basic overflowTest */
+        const registerToOverflow = Y;
+        const valueOverflow = YRegisterValue;
+        this.initOverFlowTest(testName, registerToOverflow, valueOverflow);
+
+
+        let opcode = this.createOpCode(0x8, X, Y, 0x0);
+        this._Chip8.doOperation(opcode);
+
+        let VX = this._Chip8.getRegister(X);
+        let VY = this._Chip8.getRegister(Y);
+
+        if (VX !== VY) {
+            const message = `failed [VX === VY] test, got VX == ${VX} for VY == ${VX}`;
+            this.addReportingToTest(testName, message);
+            result = false;
+        }
+
+
+        /****************** 0X8350 ******************/
+        X = 0x3;
+        Y = 0x5;
+        YRegisterValue = 50;
+
+        this._Chip8.setRegister(Y, YRegisterValue);
+
+        opcode = this.createOpCode(0x8, X, Y, 0x0);
+        this._Chip8.doOperation(opcode);
+
+        VX = this._Chip8.getRegister(X);
+        VY = this._Chip8.getRegister(Y);
+        if (!(VX === VY && VX === YRegisterValue)) {
+            let message = `failed [VX === VY && VX === YRegisterValue] test, got VX == ${VX} for VY == ${VY}
+             and YRegisterValue == ${YRegisterValue}`;
+            this.addReportingToTest(testName, message);
+            result = false;
+        }
+
+        this.printCPU_State();
+
+        return result;
+    }
+    TEST_8XY1() { const testName = "TEST_8XY1"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_8XY2() { const testName = "TEST_8XY2"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_BXY3() { const testName = "TEST_BXY3"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_8XY4() { const testName = "TEST_8XY4"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_8XY5() { const testName = "TEST_8XY5"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_8XY6() { const testName = "TEST_8XY6"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_8XY7() { const testName = "TEST_8XY7"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_8XYE() { const testName = "TEST_8XYE"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_9XY0() { const testName = "TEST_9XY0"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_ANNN() { const testName = "TEST_ANNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_BNNN() { const testName = "TEST_BNNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_CXNN() { const testName = "TEST_CXNN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_DXYN() { const testName = "TEST_DXYN"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_EX9E() { const testName = "TEST_EX9E"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_EXA1() { const testName = "TEST_EXA1"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_FX07() { const testName = "TEST_FX07"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_FX0A() { const testName = "TEST_FX0A"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_FX15() { const testName = "TEST_FX15"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_FX18() { const testName = "TEST_FX18"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_FX1E() { const testName = "TEST_FX1E"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_FX29() { const testName = "TEST_FX29"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_FX33() { const testName = "TEST_FX33"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_FX55() { const testName = "TEST_FX55"; console.log(testName + " START !"); this.printCPU_State(); }
+    TEST_FX65() { const testName = "TEST_FX65"; console.log(testName + " START !"); this.printCPU_State(); }
 
     startTests() {
 
