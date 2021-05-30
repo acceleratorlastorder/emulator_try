@@ -59,15 +59,11 @@ class Chip8Instance {
   }
 
   initFont() {
-    let Message = "";
     /** from the DEFAULT_FONT variable place the values in memory from address 50*/
     for (let index = 0; index < this.DEFAULT_FONT.length; index++) {
       const fontLine = this.DEFAULT_FONT[index];
       this.memory[50 + index] = fontLine;
-      Message += fontLine.toString(2) + "\n";
-
     }
-    this.logger(Message);
   }
 
   initCPU() {
