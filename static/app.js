@@ -1,6 +1,36 @@
 //@ts-check
 
 class Chip8Instance {
+  /*
+   ***************************************************** DECIMAL *****************************************************
+   * |  0 | |  1 | | 2  | | 3  | | 4  | | 5  | | 6  | | 7  | |  8 | |  9 | | A  | |  B | |  C | |  D | |  E | | F  | *
+   ***************************************************** BINARY ******************************************************
+   * |1111| |1000| |1111| |1111| |1001| |1111| |1111| |1111| |1111| |1111| |1111| |1110| |1111| |1110| |1111| |1111| *
+   * |1001| |1100| |1000| |1000| |1001| |1000| |1000| |1000| |1001| |1001| |1001| |1001| |1000| |1001| |1000| |1000| *
+   * |1001| |1000| |1111| |1111| |1111| |1111| |1000| |1111| |1111| |1111| |1111| |1110| |1000| |1001| |1111| |1111| *
+   * |1001| |1000| |1000| |1000| |1000| |1000| |1001| |1000| |1001| |1000| |1001| |1001| |1000| |1001| |1000| |1000| *
+   * |1111| |1110| |1111| |1111| |1000| |1111| |1111| |1000| |1111| |1111| |1001| |1110| |1111| |1110| |1111| |1000| *
+   *******************************************************************************************************************/
+  DEFAULT_FONT = [
+    0xF0, 0x90, 0x90, 0x90, 0xF0,   /** 0 */
+    0x20, 0x60, 0x20, 0x20, 0x70,   /** 1 */
+    0xF0, 0x10, 0xF0, 0x80, 0xF0,   /** 2 */
+    0xF0, 0x10, 0xF0, 0x10, 0xF0,   /** 3 */
+    0x90, 0x90, 0xF0, 0x10, 0x10,   /** 4 */
+    0xF0, 0x80, 0xF0, 0x10, 0xF0,   /** 5 */
+    0xF0, 0x80, 0x20, 0x90, 0xF0,   /** 6 */
+    0xF0, 0x10, 0xF0, 0x40, 0x40,   /** 7 */
+    0xF0, 0x90, 0xF0, 0x90, 0xF0,   /** 8 */
+    0xF0, 0x90, 0xF0, 0x10, 0xF0,   /** 9 */
+    0xF0, 0x90, 0xF0, 0x90, 0x90,   /** A */
+    0xE0, 0x90, 0xE0, 0x90, 0xE0,   /** B */
+    0xF0, 0x80, 0x80, 0x80, 0xF0,   /** C */
+    0xE0, 0x90, 0x90, 0x90, 0xE0,   /** D */
+    0xF0, 0x80, 0xF0, 0x80, 0xF0,   /** E */
+    0xF0, 0x80, 0xF0, 0x80, 0x80    /** 1 */
+  ];
+
+
   CARRY_FLAG = 0xF;
   constructor(MonitorElement) {
     if (!MonitorElement) {
@@ -17,6 +47,7 @@ class Chip8Instance {
     this.decrementInterval = 1 / this.FPS * 1000;
     this.initMemory();
     this.initCPU();
+    this.initFont();
     this.operationTable = this.generateOpcodeTable();
     this.monitorRes = { width: 64, height: 32 };
     this.defaultColor = ["black", "white"];
@@ -25,6 +56,18 @@ class Chip8Instance {
     this.monitor = null;
     this.monitor = MonitorElement;
     this.initScreen();
+  }
+
+  initFont() {
+    let Message = "";
+    /** from the DEFAULT_FONT variable place the values in memory from address 50*/
+    for (let index = 0; index < this.DEFAULT_FONT.length; index++) {
+      const fontLine = this.DEFAULT_FONT[index];
+      this.memory[50 + index] = fontLine;
+      Message += fontLine.toString(2) + "\n";
+
+    }
+    this.logger(Message);
   }
 
   initCPU() {
