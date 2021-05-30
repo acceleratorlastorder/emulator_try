@@ -271,45 +271,66 @@ class Chip8Instance {
         }
       case 12:
         {
-          const VX = this.getRegister(b3);
-          const VY = this.getRegister(b2);
+          const VXAddress = b3;
+          const VYAddress = b2;
+          const VX = this.getRegister(VXAddress);
+          const VY = this.getRegister(VYAddress);
           const registerNewValue = VX & VY;
-          this.logger("TODO! 8XY2 : sets VX to VX and VY (bitwise VX = VX&VY); VX:",
+          this.logger("MAYBE! 8XY2 : sets VX to VX and VY (bitwise VX = VX&VY); VX:",
             this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY),
             " VX&VY = ", registerNewValue);
-
-          this.CPU.register[VXAddress] = registerNewValue;
+          this.setRegister(VXAddress, registerNewValue);
           break;
         }
       case 13:
         {
-          const VX = this.getRegister(b3);
-          const VY = this.getRegister(b2);
+          const VXAddress = b3;
+          const VYAddress = b2;
+          const VX = this.getRegister(VXAddress);
+          const VY = this.getRegister(VYAddress);
           const registerNewValue = VX ^ VY;
           this.logger("MAYBE! 8XY3 : sets VX to VX xor VY; (bitwise VX = VX^VY); VX:",
             this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY),
             " VX^VY = ", this.prettyPrintOpCode(registerNewValue));
 
-          this.CPU.register[VXAddress] = registerNewValue;
+          this.setRegister(VXAddress, registerNewValue);
           break;
         }
       case 14:
         {
           const VXAddress = b3;
           const VYAddress = b2;
-          const result = this.CPU.register[VXAddress] + this.CPU.register[VYAddress];
-          this.logger("TODO! 8XY4 : adds VY to VX if overflow of the 8bit capacity the carry flag at VF is set to 1 otherwise 0; VX",
-            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " VY ", this.prettyPrintOpCode(this.CPU.register[VYAddress]),
+          const VX = this.getRegister(VXAddress);
+          const VY = this.getRegister(VYAddress);
+
+          const result = VX + VY;
+          this.logger("MAYBE! 8XY4 : adds VY to VX if overflow of the 8bit capacity the carry flag at VF is set to 1 otherwise 0; VX",
+            this.prettyPrintOpCode(VX), " VY ", this.prettyPrintOpCode(VY),
             " VX + VY =", this.prettyPrintOpCode(result));
+
+          if (result > 255) {
+            /** Set VF to 1 since the value is greater than max 8bit assignable (Remember thanks to JS the result variable might be = 666 
+              *    once we will insert this value into the 8bit register it will be converted into 154)
+              */
+            this.setCarryFlag(1);
+
+          } else {
+            this.setCarryFlag(0);
+          }
+          this.setRegister(VXAddress, result);
+
           break;
         }
       case 15:
         {
           const VXAddress = b3;
           const VYAddress = b2;
-          const result = this.CPU.register[VXAddress] - this.CPU.register[VYAddress];
+          const VX = this.getRegister(VXAddress);
+          const VY = this.getRegister(VYAddress);
+
+          const result = VX - VY;
           this.logger("MAYBE! 8XY5 : substracts VY to VX, VX -= VY: if there is a borrow VF is set to 0 otherwise 1; VX:",
-            this.prettyPrintOpCode(this.CPU.register[VXAddress]), " VY:", this.prettyPrintOpCode(this.CPU.register[VYAddress]),
+            this.prettyPrintOpCode(VX), " VY:", this.prettyPrintOpCode(VY),
             "VX -= VY:", result);
 
           if (result < 0) {
@@ -320,8 +341,7 @@ class Chip8Instance {
           } else {
             this.setCarryFlag(1);
           }
-
-          this.CPU.register[VXAddress] = result;
+          this.setRegister(VXAddress, result);
           break;
         }
       case 16:
@@ -374,7 +394,7 @@ class Chip8Instance {
             this.prettyPrintOpCode(this.CPU.register[VXAddress]), " NN:", this.prettyPrintOpCode(NN), " rand():",
             this.prettyPrintOpCode(randomCycleValue), " VX = random() & NN =", this.prettyPrintOpCode(result));
 
-          this.CPU.register[VXAddress] = result;
+          this.setRegister(VXAddress, result);
           /*randomCycleValue*/
 
           break;
