@@ -1,6 +1,7 @@
 //@ts-check
 
 class Chip8Instance {
+  CARRY_FLAG = 0xF;
   constructor(MonitorElement) {
     if (!MonitorElement) {
       console.error("Cannot instantiate 'Chip8Instance' without the 'MonitorElement' argument");
@@ -57,24 +58,6 @@ class Chip8Instance {
     for (var i = 0; i < testCase; i++) {
       this.injectOpCode(i);
     }
-  }
-
-  /**
-   * 
-   * @param {Number} register 16 addresses
-   * @returns {Number} return the value contained in register [register]
-   */
-  getRegister(register) {
-    return this.CPU.register[register];
-  }
-
-  /**
-   * 
-   * @param {Number} register 16 addresses
-   * @param {Number} value Uint8
-   */
-  setRegister(register, value) {
-    this.CPU.register[register] = value;
   }
 
   /**
@@ -230,7 +213,7 @@ class Chip8Instance {
         {
           const VXAddress = b3;
           const VY = this.CPU.register[b2];
-          this.logger("MAYBE! 8XY0 : sets VX to VY (VX = VY)");
+          this.logger("DONE! 8XY0 : sets VX to VY (VX = VY)");
 
           this.CPU.register[VXAddress] = VY;
           break;
@@ -359,8 +342,15 @@ class Chip8Instance {
         }
       case 23:
         {
-          this.logger("TODO! DXYN : draws a sprite at the coordinate VX and VY with a fixed width of 8 pixel and the height is define by N b1: ",
-            this.prettyPrintOpCode(b1), " b2: ", this.prettyPrintOpCode(b2), " b3: ", this.prettyPrintOpCode(b3));
+          const VX = this.CPU.register[b3];
+          const VY = this.CPU.register[b2];
+          const N = b1;
+          this.logger("MAYBE! DXYN : draws a sprite at the coordinate VX and VY with a fixed width of 8 pixel and the height is define by N N: ",
+            this.prettyPrintOpCode(N), " VX: ", this.prettyPrintOpCode(VX), " VY: ", this.prettyPrintOpCode(VY));
+          this.draw(VX, VY, 8, N);
+
+
+
           break;
         }
       case 24:
@@ -584,19 +574,83 @@ class Chip8Instance {
       this.monitor.appendChild(row);
     }
   }
+
+  /**
+   * Get the carry flag
+   * @returns {Number} returns the carryState
+   */
+  getCarryFlag() {
+    return this.getRegister(this.CARRY_FLAG);
+  }
+
+  /**
+   * Set the carry flag to a given value
+   * @param {Number} value 
+   * @returns {Number} returns the carryState
+   */
+  setCarryFlag(value) {
+    return this.setRegister(this.CARRY_FLAG, value);
+  }
+
+  /**
+   * 
+   * @param {Number} register 16 addresses
+   * @returns {Number} return the value contained in register [register]
+   */
+  getRegister(register) {
+    return this.CPU.register[register];
+  }
+
+  /**
+   * 
+   * @param {Number} register 16 addresses
+   * @param {Number} value Uint8
+   * @returns {Number} return the current value of the register
+   */
+  setRegister(register, value) {
+    return this.CPU.register[register] = value;
+  }
+
   setAllPixelToColor(color) {
     for (let i = this.monitorPixelReferences.length; i-- > 0;) {
       this.monitorPixelReferences[i].className = "cell " + color;
     }
   }
+
   draw(x, y, width, height) {
-    let startingIndex = x * y;
+    let startingIndex = x + (this.monitorRes.width * y);
+    let color = this.defaultColor[0];
 
+    let coordX = x;
+    let coordY = y;
 
+    /*
+    if (currentColor != color) {
 
-    for (; startingIndex < array.length; index++) {
-      const element = array[index];
+      this.setCarryFlag(1);
+    }
+    */
 
+    /**
+     * TODO: WTF ? that's overcomplicated for no reason just use: 
+     *  this.twoDimentionalMonitorArrayBuffer[coordX][coordY] = color;
+     *  with an iterator lol
+     * monitorPixelReferences is actually nice since it target directly the pixel whatever 
+     *  is put there will be directly with no other requirement displayed in the screen
+     *  maybe use it only for thing that should be there only one frame (which never really happen lol)
+     */
+    let heightLeft = height;
+    for (; heightLeft !== 0; heightLeft--) {
+      coordX = (height - heightLeft);
+      let newIndex = startingIndex + coordX;
+      let widthLeft = width;
+      for (; widthLeft !== 0; widthLeft--) {
+        coordY = (width - widthLeft);
+        newIndex = startingIndex + coordY;
+        const element = this.monitorPixelReferences[newIndex];
+        element.className = "cell " + color;
+        this.twoDimentionalMonitorArrayBuffer[coordX][coordY] = color;
+      }
     }
   }
 
@@ -607,10 +661,10 @@ class Chip8Instance {
       }
     }
   }
-  
+
   counterDecrement() {
-    if (this.CPU.delayTimer > 0) { this.CPU.delayTimer-- };
-    if (this.CPU.soundTimer > 0) { this.CPU.soundTimer-- };
+    if (this.CPU.delayTimer > 0) { this.CPU.delayTimer-- }
+    if (this.CPU.soundTimer > 0) { this.CPU.soundTimer-- }
   }
 
   async testScreen(loop) {
@@ -848,6 +902,6 @@ async function testFunction(chip8Instance) {
     console.error("failed on step : [", lastStep, "] got stack: ", e);
   }
 }
-/*start();*/
+start();
 
-startTest();
+/*startTest();*/
