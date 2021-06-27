@@ -108,7 +108,8 @@ class Chip8Instance {
 
   /**
    * Returns the value in memory curently targeted by CPU.I
-   * @returns {number} 
+   * @param {number} offset
+   * @returns {number}   
    */
   getPointedMemoryValue(offset) {
     offset = offset || 0;
@@ -145,6 +146,15 @@ class Chip8Instance {
     for (var i = 0; i < testCase; i++) {
       this.injectOpCode(i);
     }
+  }
+
+  fixOverflow(result) {
+    if (result > 0xFFFF) {
+      let overFlowFixArray = new Uint16Array(1);
+      overFlowFixArray[0] = result;
+      result = overFlowFixArray[0];
+    }
+    return result;
   }
 
   /**
@@ -518,24 +528,26 @@ class Chip8Instance {
         {
           const VX = this.getRegister(b3);
           let result = this.CPU.I + VX;
-          this.logger("TODO! FX1E : Adds VX to Memory I. VF is not affected; VX:",
+          this.logger("MAYBE! FX1E : Adds VX to Memory I. VF is not affected; VX:",
             VX, " I =", this.CPU.I, " VX + I = ", result);
           /** 
            * To know more about the carry flag behavior here:
            * https://en.wikipedia.org/wiki/CHIP-8#cite_note-18 
            */
-          if (result > 0xFFFF) {
-            let overFlowFixArray = new Uint16Array(1);
-            overFlowFixArray[0] = result;
-            result = overFlowFixArray[0];
-          }
+          result = this.fixOverflow(result);
 
           this.CPU.I = result;
           break;
         }
       case 31:
         {
-          this.logger("TODO! FX29 : Sets I to the location of the sprite for the character in VX. Characters 0-F (in hexadecimal) are represented by a 4x5 font.");
+          const VX = this.getRegister(b3);
+          this.logger(`MAYBE! FX29 : Sets I to the location of the sprite for the character in VX. 
+                        Characters 0-F (in hexadecimal) are represented by a 4x5 font.`);
+
+          /** CF DEFAULT_FONT  as you can see each of these are 5byte long, it's even in the description of the opCode "4x5 font"*/
+          this.CPU.I = this.fixOverflow(VX * 5);
+
           break;
         }
       case 32:
@@ -550,7 +562,18 @@ class Chip8Instance {
         }
       case 34:
         {
-          this.logger("TODO! FX65 : Fills V0 to VX (including VX) with values from memory starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified. ");
+          const VXAddress = b3;
+          this.logger(`MAYBE! FX65 : Fills V0 to VX (including VX) with values from memory starting at address I. 
+                      The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+                      VXAdress:${VXAddress}`);
+          /**
+           * Adds + 1 to count VX index in the loop
+           */
+          for (let i = (VXAddress + 1); i-- > 0;) {
+            console.log(i);
+            this.setRegister(i, this.getPointedMemoryValue(i));
+          }
+
           break;
         }
       default:
@@ -649,7 +672,7 @@ class Chip8Instance {
       programCounter: 512,
       /** array representing the register which is 8bit data register and 16 bloc of 8bit long */
       register: new Uint8Array(16),
-      /** 16 bit counter to iterate through the register array (called I in most documentation) */
+      /** 16 bit counter to iterate through the Memory array (called I in most documentation) */
       I: 0,
       //array representing the stack
       stack: new Uint16Array(16),
