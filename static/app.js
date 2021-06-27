@@ -30,21 +30,25 @@ class Chip8Instance {
     0xF0, 0x80, 0xF0, 0x80, 0x80 /** F */
   ];
 
-
+  DEBUG = { activated: true, level: 0 };
+  mainThreadSwitch = true;
+  opPerCycle = 4;
   CARRY_FLAG = 0xF;
+  FPS = 60;
+  timeBetweenFrame = 1 / this.FPS * 1000;
+  currentKeysPressed = [];
+  //time 1000 to get second as miliseconds
+  decrementInterval = 1 / this.FPS * 1000;
+  /**
+   * 
+   * @param {HTMLElement} MonitorElement 
+   * @returns 
+   */
   constructor(MonitorElement) {
     if (!MonitorElement) {
       console.error("Cannot instantiate 'Chip8Instance' without the 'MonitorElement' argument");
       return;
     }
-    this.DEBUG = { activated: true, level: 0 };
-    this.mainThreadSwitch = true;
-    this.FPS = 60;
-    this.timeBetweenFrame = 1 / this.FPS * 1000;
-    this.opPerCycle = 4;
-    this.currentKeysPressed = [];
-    //time 1000 to get second as miliseconds
-    this.decrementInterval = 1 / this.FPS * 1000;
     this.initMemory();
     this.initCPU();
     this.initFont();
@@ -85,6 +89,30 @@ class Chip8Instance {
    */
   getCPU_SnapShot() {
     return JSON.parse(this.getCPU_State());
+  }
+
+
+  /**
+   * @returns {string}
+   */
+  getMemoryState() {
+    return JSON.stringify(this.memory);
+  }
+
+  /**
+   * @returns {Array}
+   */
+  getMemorySnapShot() {
+    return JSON.parse(this.getMemoryState());
+  }
+
+  /**
+   * Returns the value in memory curently targeted by CPU.I
+   * @returns {number} 
+   */
+  getPointedMemoryValue(offset) {
+    offset = offset || 0;
+    return this.memory[this.CPU.I + offset];
   }
 
   initMemory() {
@@ -395,8 +423,8 @@ class Chip8Instance {
       case 20:
         {
           const NNN = opcode & 0x0FFF;
-          this.logger("DONE! ANNN : set the registerCounter to the adresse NNN; registerCounter: ", this.CPU.registerCounter, " NNN: ", this.prettyPrintOpCode(NNN));
-          this.CPU.registerCounter = NNN;
+          this.logger("DONE! ANNN : set the Memory I to the adresse NNN; Memory I: ", this.CPU.I, " NNN: ", this.prettyPrintOpCode(NNN));
+          this.CPU.I = NNN;
           break;
         }
       case 21:
@@ -489,9 +517,9 @@ class Chip8Instance {
       case 30:
         {
           const VX = this.getRegister(b3);
-          let result = this.CPU.registerCounter + VX;
-          this.logger("TODO! FX1E : Adds VX to I(registerCounter). VF is not affected; VX:",
-            VX, " I =", this.CPU.registerCounter, " VX + I = ", result);
+          let result = this.CPU.I + VX;
+          this.logger("TODO! FX1E : Adds VX to Memory I. VF is not affected; VX:",
+            VX, " I =", this.CPU.I, " VX + I = ", result);
           /** 
            * To know more about the carry flag behavior here:
            * https://en.wikipedia.org/wiki/CHIP-8#cite_note-18 
@@ -502,7 +530,7 @@ class Chip8Instance {
             result = overFlowFixArray[0];
           }
 
-          this.CPU.registerCounter = result;
+          this.CPU.I = result;
           break;
         }
       case 31:
@@ -621,8 +649,8 @@ class Chip8Instance {
       programCounter: 512,
       /** array representing the register which is 8bit data register and 16 bloc of 8bit long */
       register: new Uint8Array(16),
-      /** 16 bit counter to iterate through the register array */
-      registerCounter: 0,
+      /** 16 bit counter to iterate through the register array (called I in most documentation) */
+      I: 0,
       //array representing the stack
       stack: new Uint16Array(16),
       /** stack jump counter to iterate through the stack array must not go past 15 since the stack is 16 indexes long*/
