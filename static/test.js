@@ -36,10 +36,14 @@ class Test_Chip8Instance {
         return ((A << 12) + (B << 8) + (C << 4) + (D));
     }
 
-
+    /**
+     * 
+     * @returns {string}
+     */
     getCPU_State() {
-        return JSON.stringify(this._Chip8.CPU);
+        return this._Chip8.getCPU_State();
     }
+
     printCPU_State() {
         if (this.SHOW_CPU_STATE) {
             console.log(this.getCPU_State());
